@@ -44,4 +44,16 @@ if __name__ == '__main__':
     for eq, expected in CASES.items():
         got = output(eq)
         assert got == expected, f"\nEQ: {eq}\n--- expected ---\n{expected}\n--- got ---\n{got}"
+
+    # The square roots are hand written. int_sqrt stays exact on whole numbers.
+    from computor import exact_sqrt, int_sqrt, my_sqrt
+    from fractions import Fraction
+    assert int_sqrt(0) == 0 and int_sqrt(1) == 1 and int_sqrt(2) == 1
+    assert int_sqrt(10 ** 12) == 10 ** 6
+    assert exact_sqrt(Fraction(9, 4)) == Fraction(3, 2)
+    assert exact_sqrt(Fraction(2)) is None
+    assert exact_sqrt(Fraction(-1)) is None
+    assert abs(my_sqrt(2) - 1.4142135623730951) < 1e-15
+    assert my_sqrt(0) == 0.0
+
     print(f"OK: {len(CASES)} cases pass")

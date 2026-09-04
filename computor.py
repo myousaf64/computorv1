@@ -23,6 +23,54 @@ def parse(equation):
     return coeffs
 
 
+# --------------------------------------------------------------------------
+# arithmetic without a math library
+# --------------------------------------------------------------------------
+
+def int_sqrt(n):
+    """Return the integer square root of n by Newton's method."""
+    if n < 2:
+        return n
+    x, y = n, (n + 1) // 2
+    while y < x:
+        x, y = y, (y + n // y) // 2
+    return x
+
+
+def exact_sqrt(value):
+    """Return the exact square root of a Fraction, or None when it is irrational."""
+    if value < 0:
+        return None
+    top, bottom = int_sqrt(value.numerator), int_sqrt(value.denominator)
+    if top * top == value.numerator and bottom * bottom == value.denominator:
+        return Fraction(top, bottom)
+    return None
+
+
+def my_sqrt(value):
+    """Return the square root of a number by Newton's method."""
+    x = float(value)
+    if x <= 0:
+        return 0.0
+    guess = x if x >= 1 else 1.0
+    for _ in range(80):
+        better = (guess + x / guess) / 2
+        if better == guess:
+            break
+        guess = better
+    return guess
+
+
+def root_of(value):
+    """Return the exact square root when it exists, else the float one."""
+    exact = exact_sqrt(value)
+    return exact if exact is not None else my_sqrt(value)
+
+
+# --------------------------------------------------------------------------
+# formatting
+# --------------------------------------------------------------------------
+
 def g(x):
     """Format a number like the subject examples. Never print a negative zero."""
     return '%g' % (float(x) + 0.0)
@@ -35,15 +83,6 @@ def reduced_form(coeffs):
         c = coeffs.get(d, 0)
         parts.append(f'{"+" if c >= 0 else "-"} {g(abs(c))} * X^{d}')
     return ' '.join(parts) + ' = 0', degree
-
-
-def my_sqrt(x):
-    if x == 0:
-        return 0.0
-    guess = x
-    for _ in range(200):
-        guess = (guess + x / guess) / 2
-    return guess
 
 
 def solve(coeffs, degree, out):
