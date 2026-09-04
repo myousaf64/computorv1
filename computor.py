@@ -26,6 +26,7 @@ options:
   -h, --help   Print this text."""
 
 DIGITS = '0123456789'
+ZERO = Fraction(0)
 
 
 class ParseError(Exception):
@@ -115,7 +116,7 @@ def parse_side(s):
     coeffs = {}
     while True:
         coeff, exponent, i = _term(s, i)
-        coeffs[exponent] = coeffs.get(exponent, Fraction(0)) + sign * coeff
+        coeffs[exponent] = coefficient(coeffs, exponent) + sign * coeff
         i = _skip(s, i)
         if i >= len(s):
             return coeffs
@@ -135,8 +136,13 @@ def parse(equation):
     right = parse_side(sides[1])
     coeffs = dict(left)
     for exponent, coeff in right.items():
-        coeffs[exponent] = coeffs.get(exponent, Fraction(0)) - coeff
+        coeffs[exponent] = coefficient(coeffs, exponent) - coeff
     return coeffs, left, right
+
+
+def coefficient(coeffs, exponent):
+    """Return the coefficient for an exponent, or zero."""
+    return coeffs.get(exponent, ZERO)
 
 
 # --------------------------------------------------------------------------
@@ -202,9 +208,9 @@ def show(value, opts):
 def reduced_form(coeffs):
     """Return (the reduced form text, the degree)."""
     degree = max((d for d, c in coeffs.items() if c != 0), default=0)
-    parts = ['%s * X^0' % g(coeffs.get(0, Fraction(0)))]
+    parts = ['%s * X^0' % g(coefficient(coeffs, 0))]
     for d in range(1, degree + 1):
-        c = coeffs.get(d, Fraction(0))
+        c = coefficient(coeffs, d)
         parts.append('%s %s * X^%d' % ('+' if c >= 0 else '-', g(abs(c)), d))
     return ' '.join(parts) + ' = 0', degree
 
@@ -215,8 +221,8 @@ def coefficient_table(coeffs, left, right, out):
     out('  X^n | left       | right      | left - right')
     for d in sorted(set(left) | set(right) | set(coeffs)):
         out('  %3d | %10s | %10s | %s' % (
-            d, left.get(d, Fraction(0)), right.get(d, Fraction(0)),
-            coeffs.get(d, Fraction(0))))
+            d, coefficient(left, d), coefficient(right, d),
+            coefficient(coeffs, d)))
 
 
 def plot(a, b, c, roots, out):
@@ -264,46 +270,61 @@ def plot(a, b, c, roots, out):
 # --------------------------------------------------------------------------
 
 def solve(coeffs, degree, out, opts):
-    a = coeffs.get(2, Fraction(0))
-    b = coeffs.get(1, Fraction(0))
-    c = coeffs.get(0, Fraction(0))
-    roots = []
+    a = coefficient(coeffs, 2)
+    b = coefficient(coeffs, 1)
+    c = coefficient(coeffs, 0)
     if degree == 0:
-        # The subject prints no degree line for a degree 0 equation.
-        out('Any real number is a solution.' if c == 0 else 'No solution.')
-        return roots
+        return _solve_constant(c, out)
     out('Polynomial degree: %d' % degree)
     if degree > 2:
         out("The polynomial degree is strictly greater than 2, I can't solve.")
-        return roots
+        return []
     if degree == 1:
-        if opts['steps']:
-            out('[steps] b = %s, c = %s' % (b, c))
-            out('[steps] b * X + c = 0, so X = -c / b = -(%s) / (%s)' % (c, b))
-        root = -c / b
-        roots = [root]
-        out('The solution is:')
-        out(show(root, opts))
-        return roots
-    disc = b * b - 4 * a * c
+        return _solve_linear(b, c, out, opts)
+    return _solve_quadratic(a, b, c, out, opts)
+
+
+def step(out, opts, text):
+    """Print one calculation step when --steps is active."""
     if opts['steps']:
-        out('[steps] a = %s, b = %s, c = %s' % (a, b, c))
-        out('[steps] discriminant = b^2 - 4*a*c = (%s)^2 - 4*(%s)*(%s) = %s'
-            % (b, a, c, disc))
-        out('[steps] the discriminant is exact, so its sign is exact')
+        out(text)
+
+
+def _solve_constant(c, out):
+    """Solve an equation that has no variable term."""
+    # The subject prints no degree line for a degree 0 equation.
+    out('Any real number is a solution.' if c == 0 else 'No solution.')
+    return []
+
+
+def _solve_linear(b, c, out, opts):
+    """Solve b * X + c = 0."""
+    step(out, opts, '[steps] b = %s, c = %s' % (b, c))
+    step(out, opts, '[steps] b * X + c = 0, so X = -c / b = -(%s) / (%s)' % (c, b))
+    root = -c / b
+    out('The solution is:')
+    out(show(root, opts))
+    return [root]
+
+
+def _solve_quadratic(a, b, c, out, opts):
+    """Solve a * X^2 + b * X + c = 0."""
+    disc = b * b - 4 * a * c
+    step(out, opts, '[steps] a = %s, b = %s, c = %s' % (a, b, c))
+    step(out, opts, '[steps] discriminant = b^2 - 4*a*c = (%s)^2 - 4*(%s)*(%s) = %s'
+         % (b, a, c, disc))
+    step(out, opts, '[steps] the discriminant is exact, so its sign is exact')
     if disc > 0:
         r = root_of(disc)
-        if opts['steps']:
-            out('[steps] sqrt(%s) = %s%s' % (disc, r,
-                                             '' if isinstance(r, Fraction) else ' (Newton)'))
-            out('[steps] X = (-b -+ sqrt(D)) / (2*a), 2*a = %s' % (2 * a))
+        step(out, opts, '[steps] sqrt(%s) = %s%s' % (
+            disc, r, '' if isinstance(r, Fraction) else ' (Newton)'))
+        step(out, opts, '[steps] X = (-b -+ sqrt(D)) / (2*a), 2*a = %s' % (2 * a))
         roots = [(-b - r) / (2 * a), (-b + r) / (2 * a)]
         out('Discriminant is strictly positive, the two solutions are:')
         out(show(roots[0], opts))
         out(show(roots[1], opts))
     elif disc == 0:
-        if opts['steps']:
-            out('[steps] X = -b / (2*a) = -(%s) / (%s)' % (b, 2 * a))
+        step(out, opts, '[steps] X = -b / (2*a) = -(%s) / (%s)' % (b, 2 * a))
         roots = [-b / (2 * a)]
         out('Discriminant is zero, the solution is:')
         out(show(roots[0], opts))
@@ -311,9 +332,8 @@ def solve(coeffs, degree, out, opts):
         real = -b / (2 * a)
         r = root_of(-disc)
         imaginary = r / (2 * a)
-        if opts['steps']:
-            out('[steps] sqrt(-D) = sqrt(%s) = %s' % (-disc, r))
-            out('[steps] X = -b / (2*a) -+ i * sqrt(-D) / (2*a)')
+        step(out, opts, '[steps] sqrt(-D) = sqrt(%s) = %s' % (-disc, r))
+        step(out, opts, '[steps] X = -b / (2*a) -+ i * sqrt(-D) / (2*a)')
         roots = [complex(float(real), float(abs(imaginary))),
                  complex(float(real), -float(abs(imaginary)))]
         out('Discriminant is strictly negative, the two complex solutions are:')
@@ -331,8 +351,8 @@ def run(equation, out=print, opts=None):
     out('Reduced form: %s' % form)
     roots = solve(coeffs, degree, out, opts)
     if opts['plot']:
-        plot(coeffs.get(2, Fraction(0)), coeffs.get(1, Fraction(0)),
-             coeffs.get(0, Fraction(0)), roots, out)
+        plot(coefficient(coeffs, 2), coefficient(coeffs, 1),
+             coefficient(coeffs, 0), roots, out)
 
 
 FLAGS = {'--steps': 'steps', '--fractions': 'fractions',
