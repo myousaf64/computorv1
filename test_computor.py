@@ -114,7 +114,7 @@ if __name__ == '__main__':
 
     # A flag prints extra lines and changes no solution.
     plain = output("1 * X^0 + 2 * X^1 + 5 * X^2 = 0")
-    for flag in ('steps', 'verbose'):
+    for flag in ('steps', 'verbose', 'plot'):
         rich = output("1 * X^0 + 2 * X^1 + 5 * X^2 = 0", **{flag: True})
         assert len(rich) > len(plain), f"--{flag} printed nothing extra"
         assert plain.split('\n')[-1] in rich, f"--{flag} changed the solution"

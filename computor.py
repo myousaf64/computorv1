@@ -22,6 +22,7 @@ options:
   --steps      Print the intermediate calculation.
   --fractions  Print each solution as an irreducible fraction.
   --verbose    Print the coefficient table of the two sides.
+  --plot       Draw the curve with ASCII characters.
   -h, --help   Print this text."""
 
 DIGITS = '0123456789'
@@ -208,10 +209,6 @@ def reduced_form(coeffs):
     return ' '.join(parts) + ' = 0', degree
 
 
-# --------------------------------------------------------------------------
-# solving
-# --------------------------------------------------------------------------
-
 def coefficient_table(coeffs, left, right, out):
     """Print every collected term per side, so a reader can check the reduction."""
     out('Coefficients:')
@@ -222,23 +219,63 @@ def coefficient_table(coeffs, left, right, out):
             coeffs.get(d, Fraction(0))))
 
 
+def plot(a, b, c, roots, out):
+    """Draw the curve with ASCII characters. O marks a root."""
+    # ponytail: fixed 61x21 grid, enough to read the shape at a defense.
+    width, height = 61, 21
+    xs = [float(r) for r in roots if not isinstance(r, complex)]
+    if xs:
+        lo, hi = min(xs), max(xs)
+        pad = max(hi - lo, 1.0)
+        lo, hi = lo - pad, hi + pad
+    else:
+        lo, hi = -5.0, 5.0
+    a, b, c = float(a), float(b), float(c)
+    ys = [a * x * x + b * x + c
+          for x in (lo + (hi - lo) * i / (width - 1) for i in range(width))]
+    top, bottom = max(ys), min(ys)
+    if top == bottom:
+        top, bottom = top + 1.0, bottom - 1.0
+
+    def row(y):
+        r = int((top - y) / (top - bottom) * (height - 1) + 0.5)
+        return min(max(r, 0), height - 1)
+
+    def col(x):
+        return min(max(int((x - lo) / (hi - lo) * (width - 1) + 0.5), 0), width - 1)
+
+    grid = [[' '] * width for _ in range(height)]
+    axis = row(0.0) if bottom <= 0 <= top else None
+    if axis is not None:
+        grid[axis] = ['-'] * width
+    for i, y in enumerate(ys):
+        grid[row(y)][i] = '*'
+    for x in xs:
+        if lo <= x <= hi:
+            grid[axis if axis is not None else height - 1][col(x)] = 'O'
+    out('Plot: x from %s to %s, y from %s to %s, O marks a root'
+        % (g(lo), g(hi), g(bottom), g(top)))
+    for line in grid:
+        out('  ' + ''.join(line).rstrip())
+
+
 # --------------------------------------------------------------------------
 # solving
 # --------------------------------------------------------------------------
-
 
 def solve(coeffs, degree, out, opts):
     a = coeffs.get(2, Fraction(0))
     b = coeffs.get(1, Fraction(0))
     c = coeffs.get(0, Fraction(0))
+    roots = []
     if degree == 0:
         # The subject prints no degree line for a degree 0 equation.
         out('Any real number is a solution.' if c == 0 else 'No solution.')
-        return
+        return roots
     out('Polynomial degree: %d' % degree)
     if degree > 2:
         out("The polynomial degree is strictly greater than 2, I can't solve.")
-        return
+        return roots
     if degree == 1:
         if opts['steps']:
             out('[steps] b = %s, c = %s' % (b, c))
@@ -247,7 +284,7 @@ def solve(coeffs, degree, out, opts):
         roots = [root]
         out('The solution is:')
         out(show(root, opts))
-        return
+        return roots
     disc = b * b - 4 * a * c
     if opts['steps']:
         out('[steps] a = %s, b = %s, c = %s' % (a, b, c))
@@ -282,7 +319,7 @@ def solve(coeffs, degree, out, opts):
         out('Discriminant is strictly negative, the two complex solutions are:')
         out('%s + %si' % (show(real, opts), show(abs(imaginary), opts)))
         out('%s - %si' % (show(real, opts), show(abs(imaginary), opts)))
-    return
+    return roots
 
 
 def run(equation, out=print, opts=None):
@@ -292,11 +329,14 @@ def run(equation, out=print, opts=None):
         coefficient_table(coeffs, left, right, out)
     form, degree = reduced_form(coeffs)
     out('Reduced form: %s' % form)
-    solve(coeffs, degree, out, opts)
+    roots = solve(coeffs, degree, out, opts)
+    if opts['plot']:
+        plot(coeffs.get(2, Fraction(0)), coeffs.get(1, Fraction(0)),
+             coeffs.get(0, Fraction(0)), roots, out)
 
 
 FLAGS = {'--steps': 'steps', '--fractions': 'fractions',
-         '--verbose': 'verbose'}
+         '--verbose': 'verbose', '--plot': 'plot'}
 DEFAULTS = {name: False for name in FLAGS.values()}
 
 
