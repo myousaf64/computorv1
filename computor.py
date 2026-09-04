@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
-"""Computor v1 - solve a polynomial equation of degree <= 2.
+"""Computor v1 - solve a polynomial equation of degree 2 or lower.
 
-No math library is used for the roots: sqrt is implemented by hand (Newton's
-method), as the subject only allows +, -, *, / that you implemented yourself.
-Coefficients are kept as exact fractions so cancellation lands on a true zero.
+The arithmetic is exact. Coefficients, the discriminant and the roots stay
+Fraction values, so a discriminant that is truly zero reads as zero and not as
+a small negative float. No math library computes a root: int_sqrt and my_sqrt
+are hand-written Newton iterations, as the subject allows only the four
+operations that you implement yourself.
 """
 import sys
 import re
@@ -23,8 +25,57 @@ def parse(equation):
     return coeffs
 
 
+# --------------------------------------------------------------------------
+# arithmetic without a math library
+# --------------------------------------------------------------------------
+
+def int_sqrt(n):
+    """Return the integer square root of n by Newton's method."""
+    if n < 2:
+        return n
+    x, y = n, (n + 1) // 2
+    while y < x:
+        x, y = y, (y + n // y) // 2
+    return x
+
+
+def exact_sqrt(value):
+    """Return the exact square root of a Fraction, or None when it is irrational."""
+    if value < 0:
+        return None
+    top, bottom = int_sqrt(value.numerator), int_sqrt(value.denominator)
+    if top * top == value.numerator and bottom * bottom == value.denominator:
+        return Fraction(top, bottom)
+    return None
+
+
+def my_sqrt(value):
+    """Return the square root of a number by Newton's method."""
+    x = float(value)
+    if x <= 0:
+        return 0.0
+    guess = x if x >= 1 else 1.0
+    for _ in range(80):
+        better = (guess + x / guess) / 2
+        if better == guess:
+            break
+        guess = better
+    return guess
+
+
+def root_of(value):
+    """Return the exact square root when it exists, else the float one."""
+    exact = exact_sqrt(value)
+    return exact if exact is not None else my_sqrt(value)
+
+
+# --------------------------------------------------------------------------
+# formatting
+# --------------------------------------------------------------------------
+
 def g(x):
-    return '%g' % float(x)
+    """Format a number like the subject examples. Never print a negative zero."""
+    return '%g' % (float(x) + 0.0)
 
 
 def reduced_form(coeffs):
@@ -36,45 +87,47 @@ def reduced_form(coeffs):
     return ' '.join(parts) + ' = 0', degree
 
 
-def my_sqrt(x):
-    if x == 0:
-        return 0.0
-    guess = x
-    for _ in range(200):
-        guess = (guess + x / guess) / 2
-    return guess
-
+# --------------------------------------------------------------------------
+# solving
+# --------------------------------------------------------------------------
 
 def solve(coeffs, degree, out):
-    a = float(coeffs.get(2, 0))
-    b = float(coeffs.get(1, 0))
-    c = float(coeffs.get(0, 0))
+    a = coeffs.get(2, Fraction(0))
+    b = coeffs.get(1, Fraction(0))
+    c = coeffs.get(0, Fraction(0))
     if degree == 0:
-        # ponytail: degree-0 prints no "Polynomial degree" line, per subject examples
+        # The subject prints no degree line for a degree 0 equation.
         out('Any real number is a solution.' if c == 0 else 'No solution.')
         return
-    out(f'Polynomial degree: {degree}')
+    out('Polynomial degree: %d' % degree)
     if degree > 2:
         out("The polynomial degree is strictly greater than 2, I can't solve.")
-    elif degree == 1:
+        return
+    if degree == 1:
         out('The solution is:')
         out(g(-c / b))
-    else:
-        disc = b * b - 4 * a * c
-        if disc > 0:
-            root = my_sqrt(disc)
-            out('Discriminant is strictly positive, the two solutions are:')
-            out(g((-b - root) / (2 * a)))
-            out(g((-b + root) / (2 * a)))
-        elif disc == 0:
-            out('Discriminant is zero, the solution is:')
-            out(g(-b / (2 * a)))
+        return
+    disc = b * b - 4 * a * c
+    if disc > 0:
+        r = root_of(disc)
+        if isinstance(r, Fraction):
+            first, second = (-b - r) / (2 * a), (-b + r) / (2 * a)
         else:
-            re_ = -b / (2 * a)
-            im = my_sqrt(-disc) / (2 * a)
-            out('Discriminant is strictly negative, the two complex solutions are:')
-            out(f'{g(re_)} + {g(abs(im))}i')
-            out(f'{g(re_)} - {g(abs(im))}i')
+            top, bottom = float(-b), float(2 * a)
+            first, second = (top - r) / bottom, (top + r) / bottom
+        out('Discriminant is strictly positive, the two solutions are:')
+        out(g(first))
+        out(g(second))
+    elif disc == 0:
+        out('Discriminant is zero, the solution is:')
+        out(g(-b / (2 * a)))
+    else:
+        real = -b / (2 * a)
+        r = root_of(-disc)
+        imaginary = r / (2 * a) if isinstance(r, Fraction) else r / float(2 * a)
+        out('Discriminant is strictly negative, the two complex solutions are:')
+        out('%s + %si' % (g(real), g(abs(imaginary))))
+        out('%s - %si' % (g(real), g(abs(imaginary))))
 
 
 def run(equation, out=print):
