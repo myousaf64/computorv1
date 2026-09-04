@@ -25,6 +25,17 @@ CASES = {
         "Reduced form: 0 * X^0 = 0\nAny real number is a solution."),
     "10 * X^0 = 15 * X^0": (
         "Reduced form: -5 * X^0 = 0\nNo solution."),
+    # An exactly zero discriminant. A float discriminant read -1.4e-17 here
+    # and printed two complex solutions.
+    "0.1 * X^0 + 0.3 * X^1 + 0.225 * X^2 = 0": (
+        "Reduced form: 0.1 * X^0 + 0.3 * X^1 + 0.225 * X^2 = 0\n"
+        "Polynomial degree: 2\n"
+        "Discriminant is zero, the solution is:\n-0.666667"),
+    # An exact square root keeps the roots whole.
+    "-4 * X^0 + 1 * X^2 = 0 * X^0": (
+        "Reduced form: -4 * X^0 + 0 * X^1 + 1 * X^2 = 0\n"
+        "Polynomial degree: 2\n"
+        "Discriminant is strictly positive, the two solutions are:\n-2\n2"),
     # A root of zero must print 0, not -0.
     "3 * X^1 = 0 * X^0": (
         "Reduced form: 0 * X^0 + 3 * X^1 = 0\n"
