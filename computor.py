@@ -19,7 +19,9 @@ Read the equation from the argument. Read it from STDIN when no argument
 is present.
 
 options:
+  --steps      Print the intermediate calculation.
   --fractions  Print each solution as an irreducible fraction.
+  --verbose    Print the coefficient table of the two sides.
   -h, --help   Print this text."""
 
 DIGITS = '0123456789'
@@ -124,7 +126,7 @@ def parse_side(s):
 
 
 def parse(equation):
-    """Return {exponent: Fraction} for the reduced equation."""
+    """Return (reduced coefficients, left coefficients, right coefficients)."""
     sides = equation.split('=')
     if len(sides) != 2:
         raise ParseError('an equation must have exactly one "="')
@@ -133,7 +135,7 @@ def parse(equation):
     coeffs = dict(left)
     for exponent, coeff in right.items():
         coeffs[exponent] = coeffs.get(exponent, Fraction(0)) - coeff
-    return coeffs
+    return coeffs, left, right
 
 
 # --------------------------------------------------------------------------
@@ -209,6 +211,21 @@ def reduced_form(coeffs):
 # solving
 # --------------------------------------------------------------------------
 
+def coefficient_table(coeffs, left, right, out):
+    """Print every collected term per side, so a reader can check the reduction."""
+    out('Coefficients:')
+    out('  X^n | left       | right      | left - right')
+    for d in sorted(set(left) | set(right) | set(coeffs)):
+        out('  %3d | %10s | %10s | %s' % (
+            d, left.get(d, Fraction(0)), right.get(d, Fraction(0)),
+            coeffs.get(d, Fraction(0))))
+
+
+# --------------------------------------------------------------------------
+# solving
+# --------------------------------------------------------------------------
+
+
 def solve(coeffs, degree, out, opts):
     a = coeffs.get(2, Fraction(0))
     b = coeffs.get(1, Fraction(0))
@@ -222,41 +239,63 @@ def solve(coeffs, degree, out, opts):
         out("The polynomial degree is strictly greater than 2, I can't solve.")
         return
     if degree == 1:
+        if opts['steps']:
+            out('[steps] b = %s, c = %s' % (b, c))
+            out('[steps] b * X + c = 0, so X = -c / b = -(%s) / (%s)' % (c, b))
+        root = -c / b
+        roots = [root]
         out('The solution is:')
-        out(show(-c / b, opts))
+        out(show(root, opts))
         return
     disc = b * b - 4 * a * c
+    if opts['steps']:
+        out('[steps] a = %s, b = %s, c = %s' % (a, b, c))
+        out('[steps] discriminant = b^2 - 4*a*c = (%s)^2 - 4*(%s)*(%s) = %s'
+            % (b, a, c, disc))
+        out('[steps] the discriminant is exact, so its sign is exact')
     if disc > 0:
         r = root_of(disc)
-        if isinstance(r, Fraction):
-            first, second = (-b - r) / (2 * a), (-b + r) / (2 * a)
-        else:
-            top, bottom = float(-b), float(2 * a)
-            first, second = (top - r) / bottom, (top + r) / bottom
+        if opts['steps']:
+            out('[steps] sqrt(%s) = %s%s' % (disc, r,
+                                             '' if isinstance(r, Fraction) else ' (Newton)'))
+            out('[steps] X = (-b -+ sqrt(D)) / (2*a), 2*a = %s' % (2 * a))
+        roots = [(-b - r) / (2 * a), (-b + r) / (2 * a)]
         out('Discriminant is strictly positive, the two solutions are:')
-        out(show(first, opts))
-        out(show(second, opts))
+        out(show(roots[0], opts))
+        out(show(roots[1], opts))
     elif disc == 0:
+        if opts['steps']:
+            out('[steps] X = -b / (2*a) = -(%s) / (%s)' % (b, 2 * a))
+        roots = [-b / (2 * a)]
         out('Discriminant is zero, the solution is:')
-        out(show(-b / (2 * a), opts))
+        out(show(roots[0], opts))
     else:
         real = -b / (2 * a)
         r = root_of(-disc)
-        imaginary = r / (2 * a) if isinstance(r, Fraction) else r / float(2 * a)
+        imaginary = r / (2 * a)
+        if opts['steps']:
+            out('[steps] sqrt(-D) = sqrt(%s) = %s' % (-disc, r))
+            out('[steps] X = -b / (2*a) -+ i * sqrt(-D) / (2*a)')
+        roots = [complex(float(real), float(abs(imaginary))),
+                 complex(float(real), -float(abs(imaginary)))]
         out('Discriminant is strictly negative, the two complex solutions are:')
         out('%s + %si' % (show(real, opts), show(abs(imaginary), opts)))
         out('%s - %si' % (show(real, opts), show(abs(imaginary), opts)))
+    return
 
 
 def run(equation, out=print, opts=None):
     opts = DEFAULTS if opts is None else opts
-    coeffs = parse(equation)
+    coeffs, left, right = parse(equation)
+    if opts['verbose']:
+        coefficient_table(coeffs, left, right, out)
     form, degree = reduced_form(coeffs)
     out(f'Reduced form: {form}')
     solve(coeffs, degree, out, opts)
 
 
-FLAGS = {'--fractions': 'fractions'}
+FLAGS = {'--steps': 'steps', '--fractions': 'fractions',
+         '--verbose': 'verbose'}
 DEFAULTS = {name: False for name in FLAGS.values()}
 
 

@@ -112,6 +112,13 @@ if __name__ == '__main__':
         got = output(eq, fractions=True).split('\n')[-1]
         assert got == expected, f"\nEQ: {eq} --fractions\nGOT: {got}\nWANT: {expected}"
 
+    # A flag prints extra lines and changes no solution.
+    plain = output("1 * X^0 + 2 * X^1 + 5 * X^2 = 0")
+    for flag in ('steps', 'verbose'):
+        rich = output("1 * X^0 + 2 * X^1 + 5 * X^2 = 0", **{flag: True})
+        assert len(rich) > len(plain), f"--{flag} printed nothing extra"
+        assert plain.split('\n')[-1] in rich, f"--{flag} changed the solution"
+
     # A bad entry raises, with the reason.
     from computor import ParseError
     for eq, message in ERRORS.items():
