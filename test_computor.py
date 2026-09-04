@@ -66,6 +66,21 @@ CASES = {
         "-0.2 + 0.4i\n-0.2 - 0.4i"),
 }
 
+# Every one of these was a silent wrong answer or a traceback before.
+ERRORS = {
+    "5 * Y^0 = 0 * X^0": 'a "*" must be followed by X',
+    "5 * X^-1 = 0": 'an exponent must be a whole number, 0 or more',
+    "hello": 'an equation must have exactly one "="',
+    "5 * X^0": 'an equation must have exactly one "="',
+    "5 * X^0 = 1 = 2": 'an equation must have exactly one "="',
+    "= 5": 'one side of the equation is empty',
+    "5 + = 2": 'a term is missing at the end of a side',
+    "5 & 3 = 0": 'unexpected symbol "&" - put a "+" or a "-" between two terms',
+    ". = 0": 'a lone "." is not a number',
+    "5 . 3 = 0": 'unexpected symbol "." - put a "+" or a "-" between two terms',
+}
+
+
 if __name__ == '__main__':
     for eq, expected in CASES.items():
         got = output(eq)
@@ -82,4 +97,30 @@ if __name__ == '__main__':
     assert abs(my_sqrt(2) - 1.4142135623730951) < 1e-15
     assert my_sqrt(0) == 0.0
 
-    print(f"OK: {len(CASES)} cases pass")
+    # A bad entry raises, with the reason.
+    from computor import ParseError
+    for eq, message in ERRORS.items():
+        try:
+            output(eq)
+        except ParseError as error:
+            assert str(error) == message, f"\nEQ: {eq}\nGOT: {error}\nWANT: {message}"
+        else:
+            raise AssertionError(f"no ParseError for: {eq}")
+
+    # The command line exits 1 and prints no traceback.
+    import subprocess
+    import sys
+    done = subprocess.run([sys.executable, 'computor.py', 'hello'],
+                          capture_output=True, text=True)
+    assert done.returncode == 1, done
+    assert done.stderr.startswith('error: '), done.stderr
+    assert 'Traceback' not in done.stderr, done.stderr
+
+    # STDIN carries the equation when no argument is present.
+    done = subprocess.run([sys.executable, 'computor.py'],
+                          input="5 * X^0 + 4 * X^1 = 4 * X^0\n",
+                          capture_output=True, text=True)
+    assert done.returncode == 0, done
+    assert done.stdout.strip() == CASES["5 * X^0 + 4 * X^1 = 4 * X^0"], done.stdout
+
+    print(f"OK: {len(CASES)} cases and {len(ERRORS)} errors pass")

@@ -236,16 +236,18 @@ def run(equation, out=print):
     solve(coeffs, degree, out)
 
 
-def main():
-    if len(sys.argv) > 1:
-        equation = sys.argv[1]
-    else:
-        equation = sys.stdin.readline().strip()
+def main(argv):
+    equation = argv[0] if argv else sys.stdin.readline().strip()
     if not equation:
-        print('usage: computor "<equation>"  (or pipe one on stdin)')
-        return
-    run(equation)
+        print('usage: computor "<equation>"', file=sys.stderr)
+        return 1
+    try:
+        run(equation)
+    except ParseError as error:
+        print('error: %s' % error, file=sys.stderr)
+        return 1
+    return 0
 
 
 if __name__ == '__main__':
-    main()
+    sys.exit(main(sys.argv[1:]))
