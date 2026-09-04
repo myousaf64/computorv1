@@ -25,6 +25,14 @@ CASES = {
         "Reduced form: 0 * X^0 = 0\nAny real number is a solution."),
     "10 * X^0 = 15 * X^0": (
         "Reduced form: -5 * X^0 = 0\nNo solution."),
+    # A root of zero must print 0, not -0.
+    "3 * X^1 = 0 * X^0": (
+        "Reduced form: 0 * X^0 + 3 * X^1 = 0\n"
+        "Polynomial degree: 1\nThe solution is:\n0"),
+    "1 * X^2 = 0 * X^0": (
+        "Reduced form: 0 * X^0 + 0 * X^1 + 1 * X^2 = 0\n"
+        "Polynomial degree: 2\n"
+        "Discriminant is zero, the solution is:\n0"),
     "1 * X^0 + 2 * X^1 + 5 * X^2 = 0": (
         "Reduced form: 1 * X^0 + 2 * X^1 + 5 * X^2 = 0\n"
         "Polynomial degree: 2\n"

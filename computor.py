@@ -24,7 +24,8 @@ def parse(equation):
 
 
 def g(x):
-    return '%g' % float(x)
+    """Format a number like the subject examples. Never print a negative zero."""
+    return '%g' % (float(x) + 0.0)
 
 
 def reduced_form(coeffs):
