@@ -199,11 +199,12 @@ def show(value, opts):
 
 
 def reduced_form(coeffs):
+    """Return (the reduced form text, the degree)."""
     degree = max((d for d, c in coeffs.items() if c != 0), default=0)
-    parts = [f'{g(coeffs.get(0, 0))} * X^0']
+    parts = ['%s * X^0' % g(coeffs.get(0, Fraction(0)))]
     for d in range(1, degree + 1):
-        c = coeffs.get(d, 0)
-        parts.append(f'{"+" if c >= 0 else "-"} {g(abs(c))} * X^{d}')
+        c = coeffs.get(d, Fraction(0))
+        parts.append('%s %s * X^%d' % ('+' if c >= 0 else '-', g(abs(c)), d))
     return ' '.join(parts) + ' = 0', degree
 
 
@@ -290,7 +291,7 @@ def run(equation, out=print, opts=None):
     if opts['verbose']:
         coefficient_table(coeffs, left, right, out)
     form, degree = reduced_form(coeffs)
-    out(f'Reduced form: {form}')
+    out('Reduced form: %s' % form)
     solve(coeffs, degree, out, opts)
 
 
