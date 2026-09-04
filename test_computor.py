@@ -1,10 +1,12 @@
 """Self-check against the subject's worked examples. Run: python3 test_computor.py"""
-from computor import run
+from computor import DEFAULTS, run
 
 
-def output(equation):
+def output(equation, **flags):
     lines = []
-    run(equation, out=lines.append)
+    opts = dict(DEFAULTS)
+    opts.update(flags)
+    run(equation, out=lines.append, opts=opts)
     return '\n'.join(lines)
 
 
@@ -81,6 +83,14 @@ ERRORS = {
 }
 
 
+# The last printed line of each run, with --fractions on.
+FRACTIONS = {
+    "5 * X^0 + 4 * X^1 = 4 * X^0": "-1/4 (-0.25)",
+    "-4 * X^0 + 1 * X^2 = 0": "2",
+    "1 * X^0 + 2 * X^1 + 5 * X^2 = 0": "-1/5 (-0.2) - 2/5 (0.4)i",
+}
+
+
 if __name__ == '__main__':
     for eq, expected in CASES.items():
         got = output(eq)
@@ -96,6 +106,11 @@ if __name__ == '__main__':
     assert exact_sqrt(Fraction(-1)) is None
     assert abs(my_sqrt(2) - 1.4142135623730951) < 1e-15
     assert my_sqrt(0) == 0.0
+
+    # --fractions adds the irreducible form next to the decimal.
+    for eq, expected in FRACTIONS.items():
+        got = output(eq, fractions=True).split('\n')[-1]
+        assert got == expected, f"\nEQ: {eq} --fractions\nGOT: {got}\nWANT: {expected}"
 
     # A bad entry raises, with the reason.
     from computor import ParseError

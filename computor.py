@@ -6,9 +6,21 @@ Fraction values, so a discriminant that is truly zero reads as zero and not as
 a small negative float. No math library computes a root: int_sqrt and my_sqrt
 are hand-written Newton iterations, as the subject allows only the four
 operations that you implement yourself.
+
+Mandatory output is byte-identical to the subject examples. Every bonus is
+behind a flag, so the default run never changes.
 """
 import sys
 from fractions import Fraction
+
+USAGE = """usage: computor [options] "<equation>"
+
+Read the equation from the argument. Read it from STDIN when no argument
+is present.
+
+options:
+  --fractions  Print each solution as an irreducible fraction.
+  -h, --help   Print this text."""
 
 DIGITS = '0123456789'
 
@@ -177,6 +189,13 @@ def g(x):
     return '%g' % (float(x) + 0.0)
 
 
+def show(value, opts):
+    """Format a solution. Add the irreducible fraction when --fractions is on."""
+    if opts['fractions'] and isinstance(value, Fraction):
+        return str(value) if value.denominator == 1 else '%s (%s)' % (value, g(value))
+    return g(value)
+
+
 def reduced_form(coeffs):
     degree = max((d for d, c in coeffs.items() if c != 0), default=0)
     parts = [f'{g(coeffs.get(0, 0))} * X^0']
@@ -190,7 +209,7 @@ def reduced_form(coeffs):
 # solving
 # --------------------------------------------------------------------------
 
-def solve(coeffs, degree, out):
+def solve(coeffs, degree, out, opts):
     a = coeffs.get(2, Fraction(0))
     b = coeffs.get(1, Fraction(0))
     c = coeffs.get(0, Fraction(0))
@@ -204,7 +223,7 @@ def solve(coeffs, degree, out):
         return
     if degree == 1:
         out('The solution is:')
-        out(g(-c / b))
+        out(show(-c / b, opts))
         return
     disc = b * b - 4 * a * c
     if disc > 0:
@@ -215,34 +234,56 @@ def solve(coeffs, degree, out):
             top, bottom = float(-b), float(2 * a)
             first, second = (top - r) / bottom, (top + r) / bottom
         out('Discriminant is strictly positive, the two solutions are:')
-        out(g(first))
-        out(g(second))
+        out(show(first, opts))
+        out(show(second, opts))
     elif disc == 0:
         out('Discriminant is zero, the solution is:')
-        out(g(-b / (2 * a)))
+        out(show(-b / (2 * a), opts))
     else:
         real = -b / (2 * a)
         r = root_of(-disc)
         imaginary = r / (2 * a) if isinstance(r, Fraction) else r / float(2 * a)
         out('Discriminant is strictly negative, the two complex solutions are:')
-        out('%s + %si' % (g(real), g(abs(imaginary))))
-        out('%s - %si' % (g(real), g(abs(imaginary))))
+        out('%s + %si' % (show(real, opts), show(abs(imaginary), opts)))
+        out('%s - %si' % (show(real, opts), show(abs(imaginary), opts)))
 
 
-def run(equation, out=print):
+def run(equation, out=print, opts=None):
+    opts = DEFAULTS if opts is None else opts
     coeffs = parse(equation)
     form, degree = reduced_form(coeffs)
     out(f'Reduced form: {form}')
-    solve(coeffs, degree, out)
+    solve(coeffs, degree, out, opts)
+
+
+FLAGS = {'--fractions': 'fractions'}
+DEFAULTS = {name: False for name in FLAGS.values()}
 
 
 def main(argv):
-    equation = argv[0] if argv else sys.stdin.readline().strip()
+    opts = dict(DEFAULTS)
+    args = []
+    for arg in argv:
+        if arg in FLAGS:
+            opts[FLAGS[arg]] = True
+        elif arg in ('-h', '--help'):
+            print(USAGE)
+            return 0
+        elif arg[:1] == '-' and len(arg) > 1 and arg[1] not in DIGITS + '.':
+            print('error: unknown option "%s"' % arg, file=sys.stderr)
+            print(USAGE, file=sys.stderr)
+            return 1
+        else:
+            args.append(arg)
+    if len(args) > 1:
+        print('error: give exactly one equation', file=sys.stderr)
+        return 1
+    equation = args[0] if args else sys.stdin.readline().strip()
     if not equation:
-        print('usage: computor "<equation>"', file=sys.stderr)
+        print(USAGE, file=sys.stderr)
         return 1
     try:
-        run(equation)
+        run(equation, opts=opts)
     except ParseError as error:
         print('error: %s' % error, file=sys.stderr)
         return 1
