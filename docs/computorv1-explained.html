@@ -1,0 +1,2029 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- computorv1 field guide - single file, no build step, no dependency -->
+<title>Computor v1 Field Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&display=swap">
+<style>
+:root{
+  --paper:#edf0f1; --panel:#ffffff; --panel-2:#e3e8ea; --sunk:#e8ecee;
+  --ink:#141a1f; --ink-2:#42535d; --ink-3:#6d7f89;
+  --line:#c8d1d6; --line-2:#dde3e6;
+  --accent:#0f5f7a; --accent-soft:#d6e6ed;
+  --two:#146b52; --one:#8a5b0d; --none:#57459a;
+  --two-soft:#d3ece2; --one-soft:#f2e6c8; --none-soft:#e0dcf3;
+  --grid:rgba(20,26,31,.07);
+  --term-bg:#101820; --term-fg:#dbe5ea; --term-dim:#7f939e;
+  --shadow:0 1px 2px rgba(20,26,31,.06), 0 8px 24px -18px rgba(20,26,31,.5);
+  --serif:"Newsreader",Georgia,"Times New Roman",serif;
+  --sans:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#0d1317; --panel:#141c22; --panel-2:#1b252c; --sunk:#101920;
+    --ink:#e2e9ed; --ink-2:#a4b5be; --ink-3:#798b95;
+    --line:#28353d; --line-2:#1e2a31;
+    --accent:#5fc3e0; --accent-soft:#11313d;
+    --two:#5ac59e; --one:#dda849; --none:#ab90ea;
+    --two-soft:#102f27; --one-soft:#332711; --none-soft:#231e3d;
+    --grid:rgba(226,233,237,.07);
+    --term-bg:#080e12; --term-fg:#dbe5ea; --term-dim:#6f838e;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 30px -20px #000;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0d1317; --panel:#141c22; --panel-2:#1b252c; --sunk:#101920;
+  --ink:#e2e9ed; --ink-2:#a4b5be; --ink-3:#798b95;
+  --line:#28353d; --line-2:#1e2a31;
+  --accent:#5fc3e0; --accent-soft:#11313d;
+  --two:#5ac59e; --one:#dda849; --none:#ab90ea;
+  --two-soft:#102f27; --one-soft:#332711; --none-soft:#231e3d;
+  --grid:rgba(226,233,237,.07);
+  --term-bg:#080e12; --term-fg:#dbe5ea; --term-dim:#6f838e;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 30px -20px #000;
+}
+*{box-sizing:border-box}
+img{max-width:100%}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:var(--sans); font-size:16px; line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4{text-wrap:balance; margin:0; font-weight:600}
+p{margin:0}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent); outline-offset:3px; border-radius:2px}
+code,kbd,pre,.mono{font-family:var(--mono)}
+
+/* ---------- shell ---------- */
+.shell{display:grid; grid-template-columns:1fr; max-width:1220px; margin:0 auto; padding:0 20px}
+@media(min-width:1000px){
+  .shell{grid-template-columns:210px minmax(0,1fr); gap:48px; padding:0 32px}
+}
+nav.rail{display:none}
+@media(min-width:1000px){
+  nav.rail{
+    display:block; position:sticky; top:0; align-self:start;
+    height:100vh; overflow-y:auto; padding:40px 0 40px;
+  }
+}
+.rail .brand{font-family:var(--serif); font-size:19px; line-height:1.2; margin-bottom:4px}
+.rail .brandsub{font-size:11.5px; color:var(--ink-3); letter-spacing:.09em; text-transform:uppercase; margin-bottom:22px}
+.rail ol{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:1px}
+.rail a{
+  display:block; padding:5px 10px 5px 12px; text-decoration:none;
+  color:var(--ink-2); font-size:13.5px; border-left:2px solid var(--line-2);
+}
+.rail a:hover{color:var(--ink); background:var(--panel-2)}
+.rail a.on{color:var(--ink); border-left-color:var(--accent); font-weight:500}
+main{padding:0 0 96px; min-width:0}
+
+/* ---------- masthead ---------- */
+.masthead{
+  margin:0 -20px 0; padding:56px 20px 40px;
+  border-bottom:1px solid var(--line);
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size:26px 26px;
+}
+@media(min-width:1000px){.masthead{margin:0 0 0; padding:72px 0 44px}}
+.eyebrow{
+  font-size:11.5px; letter-spacing:.13em; text-transform:uppercase;
+  color:var(--ink-3); font-weight:500;
+}
+h1{font-family:var(--serif); font-size:clamp(38px,6.2vw,60px); line-height:1.02; letter-spacing:-.015em; margin:14px 0 0}
+.lede{font-family:var(--serif); font-size:clamp(18px,2.3vw,21px); line-height:1.5; color:var(--ink-2); max-width:60ch; margin-top:18px}
+.hero-eq{
+  font-family:var(--mono); font-size:clamp(14px,2.6vw,19px);
+  margin-top:26px; color:var(--ink); letter-spacing:-.01em;
+}
+.hero-eq .c{color:var(--accent)}
+.trichotomy{display:flex; flex-wrap:wrap; gap:8px; margin-top:24px}
+.chip{
+  display:inline-flex; align-items:center; gap:7px;
+  font-family:var(--mono); font-size:12.5px; font-weight:500;
+  padding:5px 11px; border-radius:999px; border:1px solid transparent;
+}
+.chip .dot{width:7px; height:7px; border-radius:50%; background:currentColor}
+.chip.two{color:var(--two); background:var(--two-soft); border-color:var(--two)}
+.chip.one{color:var(--one); background:var(--one-soft); border-color:var(--one)}
+.chip.none{color:var(--none); background:var(--none-soft); border-color:var(--none)}
+
+/* ---------- sections ---------- */
+section{padding-top:56px; scroll-margin-top:16px}
+.sec-head{border-top:1px solid var(--line); padding-top:14px; margin-bottom:22px}
+section:first-of-type .sec-head{border-top:0}
+h2{font-family:var(--serif); font-size:clamp(25px,3.4vw,33px); line-height:1.15; letter-spacing:-.01em; margin-top:6px}
+.sec-head p{color:var(--ink-2); margin-top:10px; max-width:66ch}
+h3{font-size:15px; letter-spacing:.02em; margin:32px 0 10px}
+.prose{max-width:66ch; display:flex; flex-direction:column; gap:14px; color:var(--ink-2)}
+.prose strong{color:var(--ink); font-weight:600}
+
+/* ---------- panels ---------- */
+.panel{background:var(--panel); border:1px solid var(--line); border-radius:5px; box-shadow:var(--shadow)}
+.pad{padding:18px}
+.stack{display:flex; flex-direction:column; gap:18px}
+.two-col{display:grid; grid-template-columns:1fr; gap:18px}
+@media(min-width:820px){.two-col{grid-template-columns:1fr 1fr}}
+
+/* ---------- tables ---------- */
+.tablewrap{overflow-x:auto; border:1px solid var(--line); border-radius:5px; background:var(--panel)}
+table{border-collapse:collapse; width:100%; font-size:14px}
+th,td{text-align:left; padding:9px 13px; border-bottom:1px solid var(--line-2); vertical-align:top}
+thead th{
+  font-size:11px; letter-spacing:.09em; text-transform:uppercase; color:var(--ink-3);
+  font-weight:600; background:var(--panel-2); border-bottom:1px solid var(--line); white-space:nowrap;
+}
+tbody tr:last-child td{border-bottom:0}
+td code, th code{font-size:12.5px; background:var(--sunk); padding:1px 5px; border-radius:3px; white-space:nowrap}
+td.num{font-variant-numeric:tabular-nums; text-align:right}
+.tag{font-family:var(--mono); font-size:11px; font-weight:500; padding:2px 7px; border-radius:3px; white-space:nowrap}
+.tag.fixed{color:var(--two); background:var(--two-soft)}
+.tag.mand{color:var(--none); background:var(--none-soft)}
+.tag.bonus{color:var(--one); background:var(--one-soft)}
+
+/* ---------- terminal ---------- */
+.term{
+  background:var(--term-bg); color:var(--term-fg); border-radius:5px;
+  font-family:var(--mono); font-size:12.5px; line-height:1.65;
+  padding:14px 16px; overflow-x:auto; border:1px solid var(--line);
+}
+.term .cmd{color:#7fd8c0; white-space:pre}
+.term .cmd::before{content:"$ "; color:var(--term-dim)}
+.term pre{margin:0; white-space:pre}
+.term .note{color:var(--term-dim)}
+.term .bad{color:#f08a7a}
+
+/* ---------- pipeline ---------- */
+.pipe{overflow-x:auto; padding:6px 0}
+.pipe svg{display:block; min-width:720px; width:100%; height:auto}
+
+/* ---------- solver ---------- */
+.io{display:grid; grid-template-columns:1fr; gap:14px}
+@media(min-width:900px){.io{grid-template-columns:1fr 1fr}}
+label.fld{display:block; font-size:11.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--ink-3); font-weight:600; margin-bottom:7px}
+input[type=text]{
+  width:100%; font-family:var(--mono); font-size:14px; padding:10px 12px;
+  border:1px solid var(--line); border-radius:4px; background:var(--sunk); color:var(--ink);
+}
+.presets{display:flex; flex-wrap:wrap; gap:6px; margin-top:12px}
+button{
+  font-family:var(--mono); font-size:12px; padding:5px 10px; cursor:pointer;
+  border:1px solid var(--line); border-radius:3px; background:var(--panel-2); color:var(--ink-2);
+}
+button:hover{border-color:var(--accent); color:var(--accent)}
+button.pri{background:var(--accent); color:var(--panel); border-color:var(--accent); font-weight:500}
+button.pri:hover{color:var(--panel); opacity:.9}
+.flags{display:flex; flex-wrap:wrap; gap:14px; margin-top:12px; font-family:var(--mono); font-size:12.5px; color:var(--ink-2)}
+.flags label{display:inline-flex; align-items:center; gap:6px; cursor:pointer}
+
+/* ---------- explorer ---------- */
+.explorer{display:grid; grid-template-columns:1fr; gap:18px}
+@media(min-width:880px){.explorer{grid-template-columns:minmax(0,1fr) 260px}}
+.sliders{display:flex; flex-direction:column; gap:16px}
+.slider label{display:flex; justify-content:space-between; font-family:var(--mono); font-size:13px; color:var(--ink-2); margin-bottom:5px}
+.slider label b{color:var(--ink); font-variant-numeric:tabular-nums; font-weight:500}
+input[type=range]{width:100%; accent-color:var(--accent)}
+.readout{border-top:1px solid var(--line-2); padding-top:14px; display:flex; flex-direction:column; gap:9px; font-family:var(--mono); font-size:13px}
+.readout div{display:flex; justify-content:space-between; gap:10px; color:var(--ink-2)}
+.readout b{font-weight:500; color:var(--ink); font-variant-numeric:tabular-nums; text-align:right}
+.graph svg{display:block; width:100%; height:auto}
+
+/* ---------- code ---------- */
+.codeblock{
+  background:var(--sunk); border:1px solid var(--line); border-radius:5px;
+  overflow-x:auto; font-family:var(--mono); font-size:12.5px; line-height:1.62;
+}
+.codeblock pre{margin:0; padding:14px 16px; white-space:pre}
+.k{color:var(--none)} .s{color:var(--two)} .cm{color:var(--ink-3); font-style:italic} .n{color:var(--accent)}
+details.fn{border:1px solid var(--line); border-radius:5px; background:var(--panel); overflow:hidden}
+details.fn+details.fn{margin-top:10px}
+details.fn>summary{
+  cursor:pointer; padding:12px 16px; display:flex; gap:12px; align-items:baseline;
+  font-family:var(--mono); font-size:13.5px; font-weight:500; list-style:none;
+}
+details.fn>summary::-webkit-details-marker{display:none}
+details.fn>summary::before{content:"+"; color:var(--accent); font-weight:600; width:11px}
+details.fn[open]>summary::before{content:"\2013"}
+details.fn>summary span{font-family:var(--sans); font-weight:400; font-size:13px; color:var(--ink-3)}
+details.fn .body{padding:0 16px 16px; display:flex; flex-direction:column; gap:12px}
+details.fn .body p{color:var(--ink-2); font-size:14.5px; max-width:66ch}
+
+/* ---------- callout ---------- */
+.callout{border-left:3px solid var(--accent); background:var(--accent-soft); padding:14px 16px; border-radius:0 4px 4px 0; font-size:14.5px; color:var(--ink)}
+.callout.warn{border-left-color:var(--one); background:var(--one-soft)}
+.callout b{font-weight:600}
+
+/* ---------- qa ---------- */
+.qa{display:flex; flex-direction:column; gap:0}
+.qa .item{border-bottom:1px solid var(--line-2); padding:15px 0}
+.qa .item:last-child{border-bottom:0}
+.qa .q{font-family:var(--serif); font-size:18.5px; color:var(--ink)}
+.qa .a{margin-top:6px; color:var(--ink-2); font-size:14.5px; max-width:70ch}
+.qa .a code{background:var(--sunk); padding:1px 5px; border-radius:3px; font-size:12.5px}
+
+footer{border-top:1px solid var(--line); margin-top:64px; padding-top:20px; color:var(--ink-3); font-size:13px; display:flex; flex-wrap:wrap; gap:8px 20px; justify-content:space-between}
+@media(prefers-reduced-motion:reduce){*{animation:none!important; transition:none!important}}
+</style>
+</head>
+<body>
+<div class="shell">
+<nav class="rail" aria-label="Sections">
+  <div class="brand">Computor v1</div>
+  <div class="brandsub">Field guide</div>
+  <ol>
+    <li><a href="#assignment">The assignment</a></li>
+    <li><a href="#pipeline">The pipeline</a></li>
+    <li><a href="#maths">The maths</a></li>
+    <li><a href="#solver">Live solver</a></li>
+    <li><a href="#explorer">Discriminant explorer</a></li>
+    <li><a href="#exact">Why exact arithmetic</a></li>
+    <li><a href="#code">Code walkthrough</a></li>
+    <li><a href="#defects">Defects and edges</a></li>
+    <li><a href="#bonus">Bonus tour</a></li>
+    <li><a href="#defense">Defense notes</a></li>
+    <li><a href="#commands">Commands</a></li>
+  </ol>
+</nav>
+
+<main>
+<header class="masthead">
+  <div class="eyebrow">42 Abu Dhabi &middot; computorv1 &middot; subject v6.3</div>
+  <h1>Computor v1 Field Guide</h1>
+  <p class="lede">One program reads a polynomial equation, moves every term to the left,
+  reports the degree, and solves it when the degree is 2 or lower. Everything below is the
+  program: the maths it does, the code that does it, and the traps a peer evaluator will
+  reach for.</p>
+  <div class="hero-eq">a<span class="c">&middot;</span>X<sup>2</sup> &nbsp;+&nbsp; b<span class="c">&middot;</span>X<sup>1</sup> &nbsp;+&nbsp; c<span class="c">&middot;</span>X<sup>0</sup> &nbsp;=&nbsp; 0 &nbsp;&nbsp;&nbsp;&nbsp; D = b<sup>2</sup> &minus; 4ac</div>
+  <div class="trichotomy">
+    <span class="chip two"><span class="dot"></span>D &gt; 0 &middot; two real roots</span>
+    <span class="chip one"><span class="dot"></span>D = 0 &middot; one double root</span>
+    <span class="chip none"><span class="dot"></span>D &lt; 0 &middot; two complex roots</span>
+  </div>
+</header>
+
+<!-- ==================== assignment ==================== -->
+<section id="assignment">
+  <div class="sec-head">
+    <div class="eyebrow">What is asked</div>
+    <h2>The assignment, line by line</h2>
+    <p>The subject asks for three printed things and a short list of traps. This table maps
+    each requirement to the function that satisfies it, so you can point at code during the
+    defense instead of searching for it.</p>
+  </div>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>The subject asks</th><th>Where it happens</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td>Print the equation in its reduced form</td><td><code>reduced_form()</code></td><td><span class="tag mand">mandatory</span></td></tr>
+      <tr><td>Print the degree of the equation</td><td><code>solve()</code>, from the highest non-zero coefficient</td><td><span class="tag mand">mandatory</span></td></tr>
+      <tr><td>Print the solutions and the polarity of the discriminant</td><td><code>solve()</code></td><td><span class="tag mand">mandatory</span></td></tr>
+      <tr><td>Degree above 2 refuses to solve</td><td><code>solve()</code>, the <code>degree &gt; 2</code> branch</td><td><span class="tag mand">mandatory</span></td></tr>
+      <tr><td>Handle zero, negative and non-whole coefficients</td><td><code>Fraction</code> everywhere, never <code>float</code> until printing</td><td><span class="tag mand">mandatory</span></td></tr>
+      <tr><td><code>42 * X^0 = 42 * X^0</code> means every real number is a solution</td><td><code>solve()</code>, the <code>degree == 0</code> branch</td><td><span class="tag mand">mandatory</span></td></tr>
+      <tr><td>Complex solutions when the degree is 2</td><td><code>solve()</code>, the <code>disc &lt; 0</code> branch</td><td><span class="tag mand">mandatory</span></td></tr>
+      <tr><td>Read STDIN when no argument is given</td><td><code>main()</code></td><td><span class="tag mand">mandatory</span></td></tr>
+      <tr><td>No math library for anything you did not write</td><td><code>int_sqrt()</code>, <code>my_sqrt()</code>, both Newton by hand</td><td><span class="tag mand">mandatory</span></td></tr>
+      <tr><td>Free form entry</td><td>one grammar in <code>parse_side()</code> reads both forms</td><td><span class="tag bonus">bonus</span></td></tr>
+      <tr><td>Manage entry mistakes</td><td><code>ParseError</code>, caught in <code>main()</code></td><td><span class="tag bonus">bonus</span></td></tr>
+      <tr><td>Solutions as an irreducible fraction</td><td><code>--fractions</code></td><td><span class="tag bonus">bonus</span></td></tr>
+      <tr><td>Intermediate calculation steps</td><td><code>--steps</code></td><td><span class="tag bonus">bonus</span></td></tr>
+      <tr><td>Coefficient table of both sides</td><td><code>--verbose</code></td><td><span class="tag bonus">bonus</span></td></tr>
+      <tr><td>ASCII curve with the roots marked</td><td><code>--plot</code></td><td><span class="tag bonus">bonus</span></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="callout" style="margin-top:18px"><b>Order matters at the defense.</b> The subject
+  says the bonus is assessed only if the mandatory part is perfect. Show the six worked
+  examples first, then <code>python3 test_computor.py</code>, and only then the flags.</div>
+</section>
+
+<!-- ==================== pipeline ==================== -->
+<section id="pipeline">
+  <div class="sec-head">
+    <div class="eyebrow">How the program is shaped</div>
+    <h2>Six stages, one direction</h2>
+    <p>Text goes in on the left, printed lines come out on the right. Nothing loops back.
+    Each stage below names the function that owns it and the type that leaves it.</p>
+  </div>
+  <div class="panel pad pipe">
+  <svg viewBox="0 0 940 214" role="img" aria-label="Pipeline from raw text to printed lines, in six stages">
+    <defs>
+      <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+        <path d="M0,0 L10,5 L0,10 z" fill="var(--ink-3)"/>
+      </marker>
+    </defs>
+    <g font-family="IBM Plex Mono, monospace">
+      <!-- stage boxes -->
+      <g>
+        <rect x="6" y="52" width="132" height="66" rx="4" fill="var(--panel-2)" stroke="var(--line)"/>
+        <text x="72" y="70" text-anchor="middle" font-size="10" fill="var(--ink-3)">1 &middot; SCAN</text>
+        <text x="72" y="90" text-anchor="middle" font-size="12.5" fill="var(--ink)">parse_side</text>
+        <text x="72" y="107" text-anchor="middle" font-size="10.5" fill="var(--ink-2)">chars &rarr; terms</text>
+      </g>
+      <g>
+        <rect x="166" y="52" width="132" height="66" rx="4" fill="var(--panel-2)" stroke="var(--line)"/>
+        <text x="232" y="70" text-anchor="middle" font-size="10" fill="var(--ink-3)">2 &middot; COLLECT</text>
+        <text x="232" y="90" text-anchor="middle" font-size="12.5" fill="var(--ink)">parse</text>
+        <text x="232" y="107" text-anchor="middle" font-size="10.5" fill="var(--ink-2)">left &minus; right</text>
+      </g>
+      <g>
+        <rect x="326" y="52" width="132" height="66" rx="4" fill="var(--panel-2)" stroke="var(--line)"/>
+        <text x="392" y="70" text-anchor="middle" font-size="10" fill="var(--ink-3)">3 &middot; REDUCE</text>
+        <text x="392" y="90" text-anchor="middle" font-size="12.5" fill="var(--ink)">reduced_form</text>
+        <text x="392" y="107" text-anchor="middle" font-size="10.5" fill="var(--ink-2)">text + degree</text>
+      </g>
+      <g>
+        <rect x="486" y="52" width="132" height="66" rx="4" fill="var(--panel-2)" stroke="var(--line)"/>
+        <text x="552" y="70" text-anchor="middle" font-size="10" fill="var(--ink-3)">4 &middot; CLASSIFY</text>
+        <text x="552" y="90" text-anchor="middle" font-size="12.5" fill="var(--ink)">solve</text>
+        <text x="552" y="107" text-anchor="middle" font-size="10.5" fill="var(--ink-2)">degree 0/1/2/&gt;2</text>
+      </g>
+      <g>
+        <rect x="646" y="52" width="132" height="66" rx="4" fill="var(--panel-2)" stroke="var(--line)"/>
+        <text x="712" y="70" text-anchor="middle" font-size="10" fill="var(--ink-3)">5 &middot; ROOT</text>
+        <text x="712" y="90" text-anchor="middle" font-size="12.5" fill="var(--ink)">root_of</text>
+        <text x="712" y="107" text-anchor="middle" font-size="10.5" fill="var(--ink-2)">exact or Newton</text>
+      </g>
+      <g>
+        <rect x="806" y="52" width="128" height="66" rx="4" fill="var(--panel-2)" stroke="var(--line)"/>
+        <text x="870" y="70" text-anchor="middle" font-size="10" fill="var(--ink-3)">6 &middot; PRINT</text>
+        <text x="870" y="90" text-anchor="middle" font-size="12.5" fill="var(--ink)">g / show</text>
+        <text x="870" y="107" text-anchor="middle" font-size="10.5" fill="var(--ink-2)">%g, 6 digits</text>
+      </g>
+      <!-- arrows -->
+      <g stroke="var(--ink-3)" stroke-width="1.2" marker-end="url(#ar)" fill="none">
+        <path d="M140 85 h20"/><path d="M300 85 h20"/><path d="M460 85 h20"/>
+        <path d="M620 85 h20"/><path d="M780 85 h20"/>
+      </g>
+      <!-- type rail -->
+      <text x="6" y="30" font-size="10" fill="var(--ink-3)">TYPE CARRIED</text>
+      <g font-size="10.5" fill="var(--accent)">
+        <text x="72" y="44" text-anchor="middle">str</text>
+        <text x="232" y="44" text-anchor="middle">dict[int, Fraction]</text>
+        <text x="392" y="44" text-anchor="middle">dict + int</text>
+        <text x="552" y="44" text-anchor="middle">Fraction a, b, c</text>
+        <text x="712" y="44" text-anchor="middle">Fraction | float</text>
+        <text x="870" y="44" text-anchor="middle">str</text>
+      </g>
+      <!-- exactness rail -->
+      <rect x="6" y="140" width="772" height="24" rx="3" fill="var(--two-soft)" stroke="var(--two)" stroke-dasharray="3 3"/>
+      <text x="392" y="156" text-anchor="middle" font-size="11" fill="var(--two)">exact rational arithmetic &mdash; no rounding happens inside this span</text>
+      <rect x="806" y="140" width="128" height="24" rx="3" fill="var(--one-soft)" stroke="var(--one)" stroke-dasharray="3 3"/>
+      <text x="870" y="156" text-anchor="middle" font-size="11" fill="var(--one)">float, once</text>
+      <text x="6" y="186" font-size="11" fill="var(--ink-3)">A ParseError at stage 1 or 2 stops the run: main prints &quot;error: &lt;reason&gt;&quot; on stderr and exits 1.</text>
+      <text x="6" y="204" font-size="11" fill="var(--ink-3)">No stage reads a math library. int_sqrt and my_sqrt are Newton iterations written in the file.</text>
+    </g>
+  </svg>
+  </div>
+</section>
+
+<!-- ==================== maths ==================== -->
+<section id="maths">
+  <div class="sec-head">
+    <div class="eyebrow">The four cases</div>
+    <h2>The maths, with nothing hidden</h2>
+    <p>Reduce, read the degree, then take one of four branches. There is no fifth branch.</p>
+  </div>
+
+  <h3>Step 1 &mdash; reduce</h3>
+  <div class="prose">
+    <p>An equation is two polynomials with an <code>=</code> between them. Subtract the right
+    side from the left, term by term, and the equation becomes <strong>P(X) = 0</strong>. This is
+    the reduced form. Coefficients are added per exponent, so
+    <code>5 * X^0 = 1 * X^0</code> collects into a single <code>4 * X^0</code>.</p>
+    <p>The <strong>degree</strong> is the largest exponent whose coefficient is not zero. The word
+    <em>not zero</em> is the whole trap: <code>0 * X^2 + 3 * X^1 = 0</code> is degree 1, not degree 2,
+    and dividing by <code>2a</code> with <code>a = 0</code> would crash.</p>
+  </div>
+
+  <h3>Step 2 &mdash; branch on the degree</h3>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Degree</th><th>Shape</th><th>What the program prints</th></tr></thead>
+    <tbody>
+      <tr><td class="num">0</td><td><code>c = 0</code></td><td><code>c = 0</code> is true for every X, so <em>Any real number is a solution.</em> Otherwise <em>No solution.</em> The subject prints no degree line here.</td></tr>
+      <tr><td class="num">1</td><td><code>bX + c = 0</code></td><td>One root, <code>X = -c / b</code>. <code>b</code> cannot be zero, or the degree would not be 1.</td></tr>
+      <tr><td class="num">2</td><td><code>aX&sup2; + bX + c = 0</code></td><td>Compute <code>D = b&sup2; - 4ac</code>, then branch on its sign.</td></tr>
+      <tr><td class="num">&gt;2</td><td>&mdash;</td><td><em>The polynomial degree is strictly greater than 2, I can't solve.</em> The subject does not ask for it.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>Step 3 &mdash; the discriminant decides</h3>
+  <div class="prose">
+    <p>Completing the square on <code>aX&sup2; + bX + c</code> gives
+    <code>a(X + b/2a)&sup2; = (b&sup2; - 4ac) / 4a</code>. Everything hangs on the sign of the right
+    side, which is the sign of <strong>D</strong>. That is why the discriminant is not a formula to
+    memorise: it is the number under the square root, and a square root of a negative number is
+    where the real line stops.</p>
+  </div>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Sign of D</th><th>Roots</th><th>Formula the code uses</th></tr></thead>
+    <tbody>
+      <tr><td><span class="chip two"><span class="dot"></span>D &gt; 0</span></td><td>two real</td><td><code>(-b - &radic;D) / 2a</code> and <code>(-b + &radic;D) / 2a</code></td></tr>
+      <tr><td><span class="chip one"><span class="dot"></span>D = 0</span></td><td>one double</td><td><code>-b / 2a</code></td></tr>
+      <tr><td><span class="chip none"><span class="dot"></span>D &lt; 0</span></td><td>two complex</td><td><code>-b / 2a &plusmn; i &middot; &radic;(-D) / 2a</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>Step 4 &mdash; the square root, by hand</h3>
+  <div class="prose">
+    <p>The subject forbids a math library function you did not write, so the file carries two
+    square roots. <code>int_sqrt(n)</code> is Newton's method on whole numbers: start at
+    <code>n</code>, replace the guess with <code>(guess + n // guess) // 2</code>, and stop when it
+    stops falling. <code>exact_sqrt</code> runs it on the numerator and the denominator of a
+    fraction; if both squares come back exactly, the root is <strong>exact</strong> and stays a
+    fraction. Otherwise <code>my_sqrt</code> runs the same iteration on floats and returns a
+    decimal.</p>
+    <p>That split is why <code>-4 * X^0 + 1 * X^2 = 0</code> prints a clean <code>-2</code> and
+    <code>2</code>, while <code>X&sup2; - 2 = 0</code> falls back to <code>1.41421</code>.</p>
+  </div>
+</section>
+<!-- ==================== solver ==================== -->
+<section id="solver">
+  <div class="sec-head">
+    <div class="eyebrow">Interactive</div>
+    <h2>Live solver</h2>
+    <p>The same algorithm, rewritten in JavaScript over <code>BigInt</code> fractions, so the
+    page is exact for the same reason the Python is. Type an equation, or load one of the
+    presets. The output block prints exactly what the terminal prints.</p>
+  </div>
+  <div class="panel pad">
+    <div class="io">
+      <div>
+        <label class="fld" for="eq">Equation</label>
+        <input type="text" id="eq" spellcheck="false" value="5 * X^0 + 4 * X^1 - 9.3 * X^2 = 1 * X^0">
+        <div class="flags">
+          <label><input type="checkbox" id="f-steps"> --steps</label>
+          <label><input type="checkbox" id="f-fractions"> --fractions</label>
+          <label><input type="checkbox" id="f-verbose"> --verbose</label>
+        </div>
+        <div class="presets" id="presets"></div>
+      </div>
+      <div>
+        <label class="fld" for="out">Output</label>
+        <div class="term" id="out" aria-live="polite"></div>
+      </div>
+    </div>
+  </div>
+  <div class="callout" style="margin-top:18px">This solver is a teaching mirror of
+  <code>computor.py</code>. The presets marked <b>defect</b> are the inputs that broke the first
+  version of the program; they are here so you can see the fixed behaviour without a terminal.</div>
+</section>
+
+<!-- ==================== explorer ==================== -->
+<section id="explorer">
+  <div class="sec-head">
+    <div class="eyebrow">Interactive</div>
+    <h2>Discriminant explorer</h2>
+    <p>Move <code>a</code>, <code>b</code> and <code>c</code> and watch the curve cross, touch, or
+    miss the x axis. The moment of interest is <code>D = 0</code>: the parabola touches the axis at
+    exactly one point, and the two roots collapse into one.</p>
+  </div>
+  <div class="panel pad explorer">
+    <div class="graph"><svg id="graph" viewBox="0 0 620 380" role="img" aria-label="Parabola for the chosen coefficients, with the roots marked on the x axis"></svg></div>
+    <div class="sliders">
+      <div class="slider"><label for="sa"><span>a &middot; X&sup2;</span><b id="va">1</b></label><input type="range" id="sa" min="-4" max="4" step="0.1" value="1"></div>
+      <div class="slider"><label for="sb"><span>b &middot; X</span><b id="vb">-1</b></label><input type="range" id="sb" min="-8" max="8" step="0.1" value="-1"></div>
+      <div class="slider"><label for="sc"><span>c</span><b id="vc">-2</b></label><input type="range" id="sc" min="-8" max="8" step="0.1" value="-2"></div>
+      <div class="readout">
+        <div><span>equation</span><b id="rEq"></b></div>
+        <div><span>D = b&sup2; &minus; 4ac</span><b id="rD"></b></div>
+        <div><span>verdict</span><b id="rV"></b></div>
+        <div><span>root 1</span><b id="rR1"></b></div>
+        <div><span>root 2</span><b id="rR2"></b></div>
+        <div><span>vertex</span><b id="rVx"></b></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== exact ==================== -->
+<section id="exact">
+  <div class="sec-head">
+    <div class="eyebrow">The bug worth understanding</div>
+    <h2>Why the coefficients stay fractions</h2>
+    <p>This is the single most likely question at the defense, and it was a real bug in the
+    first version of this program.</p>
+  </div>
+  <div class="prose">
+    <p>Take <code>0.1 * X^0 + 0.3 * X^1 + 0.225 * X^2 = 0</code>. In exact arithmetic
+    <code>D = 0.3&sup2; - 4 &times; 0.225 &times; 0.1 = 0.09 - 0.09 = 0</code>, so the equation has one
+    double root at <code>-2/3</code>. In binary floating point, none of <code>0.1</code>,
+    <code>0.3</code> or <code>0.225</code> is representable, and the subtraction lands just below
+    zero.</p>
+  </div>
+  <div class="two-col" style="margin-top:18px">
+    <div class="panel">
+      <div class="pad" style="border-bottom:1px solid var(--line-2)"><span class="tag mand">float &middot; wrong</span></div>
+      <div class="term" style="border:0;border-radius:0 0 5px 5px">
+<pre>b*b - 4*a*c  with Python floats
+  = -1.3877787807814457e-17
+
+Polynomial degree: 2
+<span class="bad">Discriminant is strictly negative,
+the two complex solutions are:
+-0.666667 + 8.27842e-09i
+-0.666667 - 8.27842e-09i</span></pre>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="pad" style="border-bottom:1px solid var(--line-2)"><span class="tag fixed">Fraction &middot; right</span></div>
+      <div class="term" style="border:0;border-radius:0 0 5px 5px">
+<pre>b*b - 4*a*c  with Fraction
+  = 0
+
+Polynomial degree: 2
+Discriminant is zero, the solution is:
+-0.666667
+
+<span class="note"># --fractions prints -2/3 (-0.666667)</span></pre>
+      </div>
+    </div>
+  </div>
+  <div class="prose" style="margin-top:18px">
+    <p><code>Fraction("0.225")</code> is exactly <code>9/40</code>. Every add, subtract, multiply
+    and divide on fractions is exact, so the cancellation lands on a true zero and the sign test
+    <code>disc &gt; 0 / == 0 / &lt; 0</code> is trustworthy. The program converts to
+    <code>float</code> in one place only: <code>g()</code>, at print time.</p>
+    <p><strong>Is Fraction a forbidden math library?</strong> No. The subject forbids a math
+    <em>function</em> you did not implement, and names addition, subtraction, multiplication and
+    division as allowed. <code>Fraction</code> is a number type that performs exactly those four
+    operations on a numerator and a denominator. No root, no power, no logarithm comes from a
+    library: <code>int_sqrt</code> and <code>my_sqrt</code> are in the file.</p>
+  </div>
+</section>
+
+<!-- ==================== code ==================== -->
+<section id="code">
+  <div class="sec-head">
+    <div class="eyebrow">Every function</div>
+    <h2>Code walkthrough</h2>
+    <p>The whole program is one file, about 340 lines with the comments. Open a function to read
+    the source and what it is for. The first three are open, because the parser is where nearly
+    all the difficulty lives.</p>
+  </div>
+  <div class="stack">
+    <details class="fn" open>
+      <summary>The scanner <span>chars to one term</span></summary>
+      <div class="body">
+        <p>Three small readers walk the string from left to right. <code>_skip</code> eats blanks, <code>_number</code> reads <code>12</code>, <code>.5</code> or <code>1e-10</code> into an exact <code>Fraction</code>, and <code>_term</code> reads one whole term.</p><p>Each of the coefficient, the <code>*</code> and the <code>^n</code> is optional, which is what makes free form entry work: <code>X</code> is <code>1 * X^1</code> and a bare <code>5</code> is <code>5 * X^0</code>. When nothing matches, <code>_term</code> raises instead of returning nothing, so a stray <code>Y</code> can never be dropped in silence.</p>
+        <div class="codeblock"><pre><span class="k">def</span> _skip(s, i):
+    <span class="k">while</span> i &lt; len(s) <span class="k">and</span> s[i] <span class="k">in</span> <span class="s">&#x27; \t&#x27;</span>:
+        i += 1
+    <span class="k">return</span> i
+
+<span class="k">def</span> _number(s, i):
+    <span class="s">&quot;&quot;&quot;Return (Fraction, next index). Return (None, i) when no number is at i.&quot;&quot;&quot;</span>
+    start = i
+    <span class="k">while</span> i &lt; len(s) <span class="k">and</span> s[i] <span class="k">in</span> DIGITS:
+        i += 1
+    <span class="k">if</span> i &lt; len(s) <span class="k">and</span> s[i] == <span class="s">&#x27;.&#x27;</span>:
+        i += 1
+        <span class="k">while</span> i &lt; len(s) <span class="k">and</span> s[i] <span class="k">in</span> DIGITS:
+            i += 1
+    <span class="k">if</span> i == start:
+        <span class="k">return</span> <span class="k">None</span>, start
+    <span class="k">if</span> s[start:i] == <span class="s">&#x27;.&#x27;</span>:
+        <span class="k">raise</span> ParseError(<span class="s">&#x27;a lone &quot;.&quot; is not a number&#x27;</span>)
+    end = i
+    <span class="k">if</span> end &lt; len(s) <span class="k">and</span> s[end] <span class="k">in</span> <span class="s">&#x27;eE&#x27;</span>:
+        j = end + 1
+        <span class="k">if</span> j &lt; len(s) <span class="k">and</span> s[j] <span class="k">in</span> <span class="s">&#x27;+-&#x27;</span>:
+            j += 1
+        k = j
+        <span class="k">while</span> j &lt; len(s) <span class="k">and</span> s[j] <span class="k">in</span> DIGITS:
+            j += 1
+        <span class="k">if</span> j &gt; k:
+            end = j
+    <span class="k">return</span> Fraction(s[start:end]), end
+
+<span class="k">def</span> _term(s, i):
+    <span class="s">&quot;&quot;&quot;Parse one term. Return (coefficient, exponent, next index).&quot;&quot;&quot;</span>
+    coeff, i = _number(s, i)
+    i = _skip(s, i)
+    star = i &lt; len(s) <span class="k">and</span> s[i] == <span class="s">&#x27;*&#x27;</span>
+    <span class="k">if</span> star:
+        i = _skip(s, i + 1)
+    <span class="k">if</span> i &lt; len(s) <span class="k">and</span> s[i] <span class="k">in</span> <span class="s">&#x27;Xx&#x27;</span>:
+        i = _skip(s, i + 1)
+        exponent = 1
+        <span class="k">if</span> i &lt; len(s) <span class="k">and</span> s[i] == <span class="s">&#x27;^&#x27;</span>:
+            i = _skip(s, i + 1)
+            value, i = _number(s, i)
+            <span class="k">if</span> value <span class="k">is</span> <span class="k">None</span> <span class="k">or</span> value &lt; 0 <span class="k">or</span> value.denominator != 1:
+                <span class="k">raise</span> ParseError(<span class="s">&#x27;an exponent must be a whole number, 0 or more&#x27;</span>)
+            exponent = int(value)
+        <span class="k">return</span> (Fraction(1) <span class="k">if</span> coeff <span class="k">is</span> <span class="k">None</span> <span class="k">else</span> coeff), exponent, i
+    <span class="k">if</span> star:
+        <span class="k">raise</span> ParseError(<span class="s">&#x27;a &quot;*&quot; must be followed by X&#x27;</span>)
+    <span class="k">if</span> coeff <span class="k">is</span> <span class="k">None</span>:
+        <span class="k">if</span> i &gt;= len(s):
+            <span class="k">raise</span> ParseError(<span class="s">&#x27;a term is missing at the end of a side&#x27;</span>)
+        <span class="k">raise</span> ParseError(<span class="s">&#x27;unexpected symbol &quot;%s&quot;&#x27;</span> % s[i])
+    <span class="k">return</span> coeff, 0, i</pre></div>
+      </div>
+    </details>
+    <details class="fn" open>
+      <summary>parse_side, parse <span>terms to coefficients</span></summary>
+      <div class="body">
+        <p><code>parse_side</code> loops over terms, and demands a <code>+</code> or a <code>-</code> between two of them. Anything else is a <code>ParseError</code>, which is how leftover text is caught.</p><p><code>parse</code> splits on <code>=</code>, insists on exactly one, then subtracts every right coefficient from the matching left one. That subtraction is the reduction: after it, the equation is <code>P(X) = 0</code>. It also returns the two raw sides, which <code>--verbose</code> prints.</p>
+        <div class="codeblock"><pre><span class="k">def</span> parse_side(s):
+    <span class="s">&quot;&quot;&quot;Return {exponent: Fraction} for one side of the equation.&quot;&quot;&quot;</span>
+    i = _skip(s, 0)
+    <span class="k">if</span> i &gt;= len(s):
+        <span class="k">raise</span> ParseError(<span class="s">&#x27;one side of the equation is empty&#x27;</span>)
+    sign = 1
+    <span class="k">if</span> s[i] <span class="k">in</span> <span class="s">&#x27;+-&#x27;</span>:
+        sign = -1 <span class="k">if</span> s[i] == <span class="s">&#x27;-&#x27;</span> <span class="k">else</span> 1
+        i = _skip(s, i + 1)
+    coeffs = {}
+    <span class="k">while</span> <span class="k">True</span>:
+        coeff, exponent, i = _term(s, i)
+        coeffs[exponent] = coeffs.get(exponent, Fraction(0)) + sign * coeff
+        i = _skip(s, i)
+        <span class="k">if</span> i &gt;= len(s):
+            <span class="k">return</span> coeffs
+        <span class="k">if</span> s[i] <span class="k">not</span> <span class="k">in</span> <span class="s">&#x27;+-&#x27;</span>:
+            <span class="k">raise</span> ParseError(<span class="s">&#x27;unexpected symbol &quot;%s&quot; - put a &quot;+&quot; or a &quot;-&quot; &#x27;</span>
+                             <span class="s">&#x27;between two terms&#x27;</span> % s[i])
+        sign = -1 <span class="k">if</span> s[i] == <span class="s">&#x27;-&#x27;</span> <span class="k">else</span> 1
+        i = _skip(s, i + 1)
+
+<span class="k">def</span> parse(equation):
+    <span class="s">&quot;&quot;&quot;Return (reduced coefficients, left coefficients, right coefficients).&quot;&quot;&quot;</span>
+    sides = equation.split(<span class="s">&#x27;=&#x27;</span>)
+    <span class="k">if</span> len(sides) != 2:
+        <span class="k">raise</span> ParseError(<span class="s">&#x27;an equation must have exactly one &quot;=&quot;&#x27;</span>)
+    left = parse_side(sides[0])
+    right = parse_side(sides[1])
+    coeffs = dict(left)
+    <span class="k">for</span> exponent, coeff <span class="k">in</span> right.items():
+        coeffs[exponent] = coeffs.get(exponent, Fraction(0)) - coeff
+    <span class="k">return</span> coeffs, left, right</pre></div>
+      </div>
+    </details>
+    <details class="fn" open>
+      <summary>The square roots <span>no math library</span></summary>
+      <div class="body">
+        <p><code>int_sqrt</code> is Newton's method on whole numbers: the guess falls until it stops falling. <code>exact_sqrt</code> runs it on the numerator and the denominator, and returns a <code>Fraction</code> only when both come back as perfect squares. <code>my_sqrt</code> runs the same iteration on floats for the irrational case and stops as soon as the guess repeats.</p><p><code>root_of</code> picks the exact one when it exists. That is why <code>&radic;16</code> stays <code>4</code> and never becomes <code>4.000000000000001</code>.</p>
+        <div class="codeblock"><pre><span class="k">def</span> int_sqrt(n):
+    <span class="s">&quot;&quot;&quot;Return the integer square root of n by Newton&#x27;s method.&quot;&quot;&quot;</span>
+    <span class="k">if</span> n &lt; 2:
+        <span class="k">return</span> n
+    x, y = n, (n + 1) // 2
+    <span class="k">while</span> y &lt; x:
+        x, y = y, (y + n // y) // 2
+    <span class="k">return</span> x
+
+<span class="k">def</span> exact_sqrt(value):
+    <span class="s">&quot;&quot;&quot;Return the exact square root of a Fraction, or None when it is irrational.&quot;&quot;&quot;</span>
+    <span class="k">if</span> value &lt; 0:
+        <span class="k">return</span> <span class="k">None</span>
+    top, bottom = int_sqrt(value.numerator), int_sqrt(value.denominator)
+    <span class="k">if</span> top * top == value.numerator <span class="k">and</span> bottom * bottom == value.denominator:
+        <span class="k">return</span> Fraction(top, bottom)
+    <span class="k">return</span> <span class="k">None</span>
+
+<span class="k">def</span> my_sqrt(value):
+    <span class="s">&quot;&quot;&quot;Return the square root of a number by Newton&#x27;s method.&quot;&quot;&quot;</span>
+    x = float(value)
+    <span class="k">if</span> x &lt;= 0:
+        <span class="k">return</span> 0.0
+    guess = x <span class="k">if</span> x &gt;= 1 <span class="k">else</span> 1.0
+    <span class="k">for</span> _ <span class="k">in</span> range(80):
+        better = (guess + x / guess) / 2
+        <span class="k">if</span> better == guess:
+            <span class="k">break</span>
+        guess = better
+    <span class="k">return</span> guess
+
+<span class="k">def</span> root_of(value):
+    <span class="s">&quot;&quot;&quot;Return the exact square root when it exists, else the float one.&quot;&quot;&quot;</span>
+    exact = exact_sqrt(value)
+    <span class="k">return</span> exact <span class="k">if</span> exact <span class="k">is</span> <span class="k">not</span> <span class="k">None</span> <span class="k">else</span> my_sqrt(value)</pre></div>
+      </div>
+    </details>
+    <details class="fn">
+      <summary>Formatting <span>%g, six digits</span></summary>
+      <div class="body">
+        <p><code>g</code> is the only place a <code>Fraction</code> becomes a <code>float</code>. Adding <code>0.0</code> first turns <code>-0.0</code> into <code>0.0</code>, so a zero root never prints as <code>-0</code>.</p><p><code>reduced_form</code> prints every exponent from 0 up to the degree, including the zero ones, because the subject's own example prints <code>0 * X^2</code>. The degree is the largest exponent whose coefficient is not zero.</p>
+        <div class="codeblock"><pre><span class="k">def</span> g(x):
+    <span class="s">&quot;&quot;&quot;Format a number like the subject examples. Never print a negative zero.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="s">&#x27;%g&#x27;</span> % (float(x) + 0.0)
+
+<span class="k">def</span> show(value, opts):
+    <span class="s">&quot;&quot;&quot;Format a solution. Add the irreducible fraction when --fractions is on.&quot;&quot;&quot;</span>
+    <span class="k">if</span> opts[<span class="s">&#x27;fractions&#x27;</span>] <span class="k">and</span> isinstance(value, Fraction):
+        <span class="k">return</span> str(value) <span class="k">if</span> value.denominator == 1 <span class="k">else</span> <span class="s">&#x27;%s (%s)&#x27;</span> % (value, g(value))
+    <span class="k">return</span> g(value)
+
+<span class="k">def</span> reduced_form(coeffs):
+    <span class="s">&quot;&quot;&quot;Return (the reduced form text, the degree).&quot;&quot;&quot;</span>
+    degree = max((d <span class="k">for</span> d, c <span class="k">in</span> coeffs.items() <span class="k">if</span> c != 0), default=0)
+    parts = [<span class="s">&#x27;%s * X^0&#x27;</span> % g(coeffs.get(0, Fraction(0)))]
+    <span class="k">for</span> d <span class="k">in</span> range(1, degree + 1):
+        c = coeffs.get(d, Fraction(0))
+        parts.append(<span class="s">&#x27;%s %s * X^%d&#x27;</span> % (<span class="s">&#x27;+&#x27;</span> <span class="k">if</span> c &gt;= 0 <span class="k">else</span> <span class="s">&#x27;-&#x27;</span>, g(abs(c)), d))
+    <span class="k">return</span> <span class="s">&#x27; &#x27;</span>.join(parts) + <span class="s">&#x27; = 0&#x27;</span>, degree</pre></div>
+      </div>
+    </details>
+    <details class="fn">
+      <summary>solve <span>the four branches</span></summary>
+      <div class="body">
+        <p>Degree 0 prints no degree line, because the subject's examples do not. Degree 1 divides <code>-c</code> by <code>b</code>, which is safe: if <code>b</code> were zero the degree would not be 1. Degree above 2 refuses.</p><p>For degree 2 the discriminant is built from <code>Fraction</code> values, so <code>disc &gt; 0</code>, <code>disc == 0</code> and <code>disc &lt; 0</code> are exact tests, not float guesses. Every <code>[steps]</code> line is behind the flag, so the default output is untouched.</p>
+        <div class="codeblock"><pre><span class="k">def</span> solve(coeffs, degree, out, opts):
+    a = coeffs.get(2, Fraction(0))
+    b = coeffs.get(1, Fraction(0))
+    c = coeffs.get(0, Fraction(0))
+    roots = []
+    <span class="k">if</span> degree == 0:
+        <span class="cm"># The subject prints no degree line for a degree 0 equation.</span>
+        out(<span class="s">&#x27;Any real number is a solution.&#x27;</span> <span class="k">if</span> c == 0 <span class="k">else</span> <span class="s">&#x27;No solution.&#x27;</span>)
+        <span class="k">return</span> roots
+    out(<span class="s">&#x27;Polynomial degree: %d&#x27;</span> % degree)
+    <span class="k">if</span> degree &gt; 2:
+        out(<span class="s">&quot;The polynomial degree is strictly greater than 2, I can&#x27;t solve.&quot;</span>)
+        <span class="k">return</span> roots
+    <span class="k">if</span> degree == 1:
+        <span class="k">if</span> opts[<span class="s">&#x27;steps&#x27;</span>]:
+            out(<span class="s">&#x27;[steps] b = %s, c = %s&#x27;</span> % (b, c))
+            out(<span class="s">&#x27;[steps] b * X + c = 0, so X = -c / b = -(%s) / (%s)&#x27;</span> % (c, b))
+        root = -c / b
+        roots = [root]
+        out(<span class="s">&#x27;The solution is:&#x27;</span>)
+        out(show(root, opts))
+        <span class="k">return</span> roots
+    disc = b * b - 4 * a * c
+    <span class="k">if</span> opts[<span class="s">&#x27;steps&#x27;</span>]:
+        out(<span class="s">&#x27;[steps] a = %s, b = %s, c = %s&#x27;</span> % (a, b, c))
+        out(<span class="s">&#x27;[steps] discriminant = b^2 - 4*a*c = (%s)^2 - 4*(%s)*(%s) = %s&#x27;</span>
+            % (b, a, c, disc))
+        out(<span class="s">&#x27;[steps] the discriminant is exact, so its sign is exact&#x27;</span>)
+    <span class="k">if</span> disc &gt; 0:
+        r = root_of(disc)
+        <span class="k">if</span> opts[<span class="s">&#x27;steps&#x27;</span>]:
+            out(<span class="s">&#x27;[steps] sqrt(%s) = %s%s&#x27;</span> % (disc, r,
+                                             <span class="s">&#x27;&#x27;</span> <span class="k">if</span> isinstance(r, Fraction) <span class="k">else</span> <span class="s">&#x27; (Newton)&#x27;</span>))
+            out(<span class="s">&#x27;[steps] X = (-b -+ sqrt(D)) / (2*a), 2*a = %s&#x27;</span> % (2 * a))
+        roots = [(-b - r) / (2 * a), (-b + r) / (2 * a)]
+        out(<span class="s">&#x27;Discriminant is strictly positive, the two solutions are:&#x27;</span>)
+        out(show(roots[0], opts))
+        out(show(roots[1], opts))
+    <span class="k">elif</span> disc == 0:
+        <span class="k">if</span> opts[<span class="s">&#x27;steps&#x27;</span>]:
+            out(<span class="s">&#x27;[steps] X = -b / (2*a) = -(%s) / (%s)&#x27;</span> % (b, 2 * a))
+        roots = [-b / (2 * a)]
+        out(<span class="s">&#x27;Discriminant is zero, the solution is:&#x27;</span>)
+        out(show(roots[0], opts))
+    <span class="k">else</span>:
+        real = -b / (2 * a)
+        r = root_of(-disc)
+        imaginary = r / (2 * a)
+        <span class="k">if</span> opts[<span class="s">&#x27;steps&#x27;</span>]:
+            out(<span class="s">&#x27;[steps] sqrt(-D) = sqrt(%s) = %s&#x27;</span> % (-disc, r))
+            out(<span class="s">&#x27;[steps] X = -b / (2*a) -+ i * sqrt(-D) / (2*a)&#x27;</span>)
+        roots = [complex(float(real), float(abs(imaginary))),
+                 complex(float(real), -float(abs(imaginary)))]
+        out(<span class="s">&#x27;Discriminant is strictly negative, the two complex solutions are:&#x27;</span>)
+        out(<span class="s">&#x27;%s + %si&#x27;</span> % (show(real, opts), show(abs(imaginary), opts)))
+        out(<span class="s">&#x27;%s - %si&#x27;</span> % (show(real, opts), show(abs(imaginary), opts)))
+    <span class="k">return</span> roots</pre></div>
+      </div>
+    </details>
+    <details class="fn">
+      <summary>The two printers <span>bonus output</span></summary>
+      <div class="body">
+        <p><code>coefficient_table</code> is <code>--verbose</code>: one row per exponent, left, right, and the difference, so a reader can check the reduction by hand.</p><p><code>plot</code> is <code>--plot</code>: a fixed 61 by 21 character grid. It maps each sampled y to a row, draws the x axis as dashes, and puts an <code>O</code> at each real root.</p>
+        <div class="codeblock"><pre><span class="k">def</span> coefficient_table(coeffs, left, right, out):
+    <span class="s">&quot;&quot;&quot;Print every collected term per side, so a reader can check the reduction.&quot;&quot;&quot;</span>
+    out(<span class="s">&#x27;Coefficients:&#x27;</span>)
+    out(<span class="s">&#x27;  X^n | left       | right      | left - right&#x27;</span>)
+    <span class="k">for</span> d <span class="k">in</span> sorted(set(left) | set(right) | set(coeffs)):
+        out(<span class="s">&#x27;  %3d | %10s | %10s | %s&#x27;</span> % (
+            d, left.get(d, Fraction(0)), right.get(d, Fraction(0)),
+            coeffs.get(d, Fraction(0))))
+
+<span class="k">def</span> plot(a, b, c, roots, out):
+    <span class="s">&quot;&quot;&quot;Draw the curve with ASCII characters. O marks a root.&quot;&quot;&quot;</span>
+    <span class="cm"># ponytail: fixed 61x21 grid, enough to read the shape at a defense.</span>
+    width, height = 61, 21
+    xs = [float(r) <span class="k">for</span> r <span class="k">in</span> roots <span class="k">if</span> <span class="k">not</span> isinstance(r, complex)]
+    <span class="k">if</span> xs:
+        lo, hi = min(xs), max(xs)
+        pad = max(hi - lo, 1.0)
+        lo, hi = lo - pad, hi + pad
+    <span class="k">else</span>:
+        lo, hi = -5.0, 5.0
+    a, b, c = float(a), float(b), float(c)
+    ys = [a * x * x + b * x + c
+          <span class="k">for</span> x <span class="k">in</span> (lo + (hi - lo) * i / (width - 1) <span class="k">for</span> i <span class="k">in</span> range(width))]
+    top, bottom = max(ys), min(ys)
+    <span class="k">if</span> top == bottom:
+        top, bottom = top + 1.0, bottom - 1.0
+
+    <span class="k">def</span> row(y):
+        r = int((top - y) / (top - bottom) * (height - 1) + 0.5)
+        <span class="k">return</span> min(max(r, 0), height - 1)
+
+    <span class="k">def</span> col(x):
+        <span class="k">return</span> min(max(int((x - lo) / (hi - lo) * (width - 1) + 0.5), 0), width - 1)
+
+    grid = [[<span class="s">&#x27; &#x27;</span>] * width <span class="k">for</span> _ <span class="k">in</span> range(height)]
+    axis = row(0.0) <span class="k">if</span> bottom &lt;= 0 &lt;= top <span class="k">else</span> <span class="k">None</span>
+    <span class="k">if</span> axis <span class="k">is</span> <span class="k">not</span> <span class="k">None</span>:
+        grid[axis] = [<span class="s">&#x27;-&#x27;</span>] * width
+    <span class="k">for</span> i, y <span class="k">in</span> enumerate(ys):
+        grid[row(y)][i] = <span class="s">&#x27;*&#x27;</span>
+    <span class="k">for</span> x <span class="k">in</span> xs:
+        <span class="k">if</span> lo &lt;= x &lt;= hi:
+            grid[axis <span class="k">if</span> axis <span class="k">is</span> <span class="k">not</span> <span class="k">None</span> <span class="k">else</span> height - 1][col(x)] = <span class="s">&#x27;O&#x27;</span>
+    out(<span class="s">&#x27;Plot: x from %s to %s, y from %s to %s, O marks a root&#x27;</span>
+        % (g(lo), g(hi), g(bottom), g(top)))
+    <span class="k">for</span> line <span class="k">in</span> grid:
+        out(<span class="s">&#x27;  &#x27;</span> + <span class="s">&#x27;&#x27;</span>.join(line).rstrip())</pre></div>
+      </div>
+    </details>
+    <details class="fn">
+      <summary>run, main <span>wiring</span></summary>
+      <div class="body">
+        <p><code>run</code> is the whole program in six lines, and takes an <code>out</code> function so the tests can capture the printed lines without touching stdout.</p><p><code>main</code> reads the flags, falls back to STDIN when no equation argument is present, and catches <code>ParseError</code> to print <code>error: &lt;reason&gt;</code> on stderr with exit status 1. A leading <code>-</code> followed by a digit is an equation, not an option, so <code>"-4 * X^0 + 1 * X^2 = 0"</code> still works.</p>
+        <div class="codeblock"><pre><span class="k">def</span> run(equation, out=print, opts=<span class="k">None</span>):
+    opts = DEFAULTS <span class="k">if</span> opts <span class="k">is</span> <span class="k">None</span> <span class="k">else</span> opts
+    coeffs, left, right = parse(equation)
+    <span class="k">if</span> opts[<span class="s">&#x27;verbose&#x27;</span>]:
+        coefficient_table(coeffs, left, right, out)
+    form, degree = reduced_form(coeffs)
+    out(<span class="s">&#x27;Reduced form: %s&#x27;</span> % form)
+    roots = solve(coeffs, degree, out, opts)
+    <span class="k">if</span> opts[<span class="s">&#x27;plot&#x27;</span>]:
+        plot(coeffs.get(2, Fraction(0)), coeffs.get(1, Fraction(0)),
+             coeffs.get(0, Fraction(0)), roots, out)
+
+
+FLAGS = {<span class="s">&#x27;--steps&#x27;</span>: <span class="s">&#x27;steps&#x27;</span>, <span class="s">&#x27;--fractions&#x27;</span>: <span class="s">&#x27;fractions&#x27;</span>,
+         <span class="s">&#x27;--verbose&#x27;</span>: <span class="s">&#x27;verbose&#x27;</span>, <span class="s">&#x27;--plot&#x27;</span>: <span class="s">&#x27;plot&#x27;</span>}
+DEFAULTS = {name: <span class="k">False</span> <span class="k">for</span> name <span class="k">in</span> FLAGS.values()}
+
+<span class="k">def</span> main(argv):
+    opts = dict(DEFAULTS)
+    args = []
+    <span class="k">for</span> arg <span class="k">in</span> argv:
+        <span class="k">if</span> arg <span class="k">in</span> FLAGS:
+            opts[FLAGS[arg]] = <span class="k">True</span>
+        <span class="k">elif</span> arg <span class="k">in</span> (<span class="s">&#x27;-h&#x27;</span>, <span class="s">&#x27;--help&#x27;</span>):
+            print(USAGE)
+            <span class="k">return</span> 0
+        <span class="k">elif</span> arg[:1] == <span class="s">&#x27;-&#x27;</span> <span class="k">and</span> len(arg) &gt; 1 <span class="k">and</span> arg[1] <span class="k">not</span> <span class="k">in</span> DIGITS + <span class="s">&#x27;.&#x27;</span>:
+            print(<span class="s">&#x27;error: unknown option &quot;%s&quot;&#x27;</span> % arg, file=sys.stderr)
+            print(USAGE, file=sys.stderr)
+            <span class="k">return</span> 1
+        <span class="k">else</span>:
+            args.append(arg)
+    <span class="k">if</span> len(args) &gt; 1:
+        print(<span class="s">&#x27;error: give exactly one equation&#x27;</span>, file=sys.stderr)
+        <span class="k">return</span> 1
+    equation = args[0] <span class="k">if</span> args <span class="k">else</span> sys.stdin.readline().strip()
+    <span class="k">if</span> <span class="k">not</span> equation:
+        print(USAGE, file=sys.stderr)
+        <span class="k">return</span> 1
+    <span class="k">try</span>:
+        run(equation, opts=opts)
+    <span class="k">except</span> ParseError as error:
+        print(<span class="s">&#x27;error: %s&#x27;</span> % error, file=sys.stderr)
+        <span class="k">return</span> 1
+    <span class="k">return</span> 0
+
+
+<span class="k">if</span> __name__ == <span class="s">&#x27;__main__&#x27;</span>:
+    sys.exit(main(sys.argv[1:]))</pre></div>
+      </div>
+    </details>
+  </div>
+  <h3>The complete file</h3>
+  <div class="codeblock"><pre id="fullsource"><span class="cm">#!/usr/bin/env python3</span>
+<span class="s">&quot;&quot;&quot;Computor v1 - solve a polynomial equation of degree 2 or lower.
+
+The arithmetic is exact. Coefficients, the discriminant and the roots stay
+Fraction values, so a discriminant that is truly zero reads as zero and not as
+a small negative float. No math library computes a root: int_sqrt and my_sqrt
+are hand-written Newton iterations, as the subject allows only the four
+operations that you implement yourself.
+
+Mandatory output is byte-identical to the subject examples. Every bonus is
+behind a flag, so the default run never changes.
+&quot;&quot;&quot;</span>
+<span class="k">import</span> sys
+<span class="k">from</span> fractions <span class="k">import</span> Fraction
+
+USAGE = <span class="s">&quot;&quot;&quot;usage: computor [options] &quot;&lt;equation&gt;&quot;
+
+Read the equation from the argument. Read it from STDIN when no argument
+is present.
+
+options:
+  --steps      Print the intermediate calculation.
+  --fractions  Print each solution as an irreducible fraction.
+  --verbose    Print the coefficient table of the two sides.
+  --plot       Draw the curve with ASCII characters.
+  -h, --help   Print this text.&quot;&quot;&quot;</span>
+
+DIGITS = <span class="s">&#x27;0123456789&#x27;</span>
+
+
+<span class="k">class</span> ParseError(Exception):
+    <span class="s">&quot;&quot;&quot;The input is not a valid equation.&quot;&quot;&quot;</span>
+
+
+<span class="cm"># --------------------------------------------------------------------------</span>
+<span class="cm"># parsing</span>
+<span class="cm">#</span>
+<span class="cm"># One grammar reads the canonical form and the free form:</span>
+<span class="cm">#</span>
+<span class="cm">#   side := term ((&#x27;+&#x27; | &#x27;-&#x27;) term)*</span>
+<span class="cm">#   term := [number] [&#x27;*&#x27;] [X [&#x27;^&#x27; whole number]]</span>
+<span class="cm">#</span>
+<span class="cm"># The scanner consumes the side from left to right. Any symbol that the</span>
+<span class="cm"># grammar does not accept raises a ParseError, so no term is dropped in</span>
+<span class="cm"># silence.</span>
+<span class="cm"># --------------------------------------------------------------------------</span>
+
+<span class="k">def</span> _skip(s, i):
+    <span class="k">while</span> i &lt; len(s) <span class="k">and</span> s[i] <span class="k">in</span> <span class="s">&#x27; \t&#x27;</span>:
+        i += 1
+    <span class="k">return</span> i
+
+
+<span class="k">def</span> _number(s, i):
+    <span class="s">&quot;&quot;&quot;Return (Fraction, next index). Return (None, i) when no number is at i.&quot;&quot;&quot;</span>
+    start = i
+    <span class="k">while</span> i &lt; len(s) <span class="k">and</span> s[i] <span class="k">in</span> DIGITS:
+        i += 1
+    <span class="k">if</span> i &lt; len(s) <span class="k">and</span> s[i] == <span class="s">&#x27;.&#x27;</span>:
+        i += 1
+        <span class="k">while</span> i &lt; len(s) <span class="k">and</span> s[i] <span class="k">in</span> DIGITS:
+            i += 1
+    <span class="k">if</span> i == start:
+        <span class="k">return</span> <span class="k">None</span>, start
+    <span class="k">if</span> s[start:i] == <span class="s">&#x27;.&#x27;</span>:
+        <span class="k">raise</span> ParseError(<span class="s">&#x27;a lone &quot;.&quot; is not a number&#x27;</span>)
+    end = i
+    <span class="k">if</span> end &lt; len(s) <span class="k">and</span> s[end] <span class="k">in</span> <span class="s">&#x27;eE&#x27;</span>:
+        j = end + 1
+        <span class="k">if</span> j &lt; len(s) <span class="k">and</span> s[j] <span class="k">in</span> <span class="s">&#x27;+-&#x27;</span>:
+            j += 1
+        k = j
+        <span class="k">while</span> j &lt; len(s) <span class="k">and</span> s[j] <span class="k">in</span> DIGITS:
+            j += 1
+        <span class="k">if</span> j &gt; k:
+            end = j
+    <span class="k">return</span> Fraction(s[start:end]), end
+
+
+<span class="k">def</span> _term(s, i):
+    <span class="s">&quot;&quot;&quot;Parse one term. Return (coefficient, exponent, next index).&quot;&quot;&quot;</span>
+    coeff, i = _number(s, i)
+    i = _skip(s, i)
+    star = i &lt; len(s) <span class="k">and</span> s[i] == <span class="s">&#x27;*&#x27;</span>
+    <span class="k">if</span> star:
+        i = _skip(s, i + 1)
+    <span class="k">if</span> i &lt; len(s) <span class="k">and</span> s[i] <span class="k">in</span> <span class="s">&#x27;Xx&#x27;</span>:
+        i = _skip(s, i + 1)
+        exponent = 1
+        <span class="k">if</span> i &lt; len(s) <span class="k">and</span> s[i] == <span class="s">&#x27;^&#x27;</span>:
+            i = _skip(s, i + 1)
+            value, i = _number(s, i)
+            <span class="k">if</span> value <span class="k">is</span> <span class="k">None</span> <span class="k">or</span> value &lt; 0 <span class="k">or</span> value.denominator != 1:
+                <span class="k">raise</span> ParseError(<span class="s">&#x27;an exponent must be a whole number, 0 or more&#x27;</span>)
+            exponent = int(value)
+        <span class="k">return</span> (Fraction(1) <span class="k">if</span> coeff <span class="k">is</span> <span class="k">None</span> <span class="k">else</span> coeff), exponent, i
+    <span class="k">if</span> star:
+        <span class="k">raise</span> ParseError(<span class="s">&#x27;a &quot;*&quot; must be followed by X&#x27;</span>)
+    <span class="k">if</span> coeff <span class="k">is</span> <span class="k">None</span>:
+        <span class="k">if</span> i &gt;= len(s):
+            <span class="k">raise</span> ParseError(<span class="s">&#x27;a term is missing at the end of a side&#x27;</span>)
+        <span class="k">raise</span> ParseError(<span class="s">&#x27;unexpected symbol &quot;%s&quot;&#x27;</span> % s[i])
+    <span class="k">return</span> coeff, 0, i
+
+
+<span class="k">def</span> parse_side(s):
+    <span class="s">&quot;&quot;&quot;Return {exponent: Fraction} for one side of the equation.&quot;&quot;&quot;</span>
+    i = _skip(s, 0)
+    <span class="k">if</span> i &gt;= len(s):
+        <span class="k">raise</span> ParseError(<span class="s">&#x27;one side of the equation is empty&#x27;</span>)
+    sign = 1
+    <span class="k">if</span> s[i] <span class="k">in</span> <span class="s">&#x27;+-&#x27;</span>:
+        sign = -1 <span class="k">if</span> s[i] == <span class="s">&#x27;-&#x27;</span> <span class="k">else</span> 1
+        i = _skip(s, i + 1)
+    coeffs = {}
+    <span class="k">while</span> <span class="k">True</span>:
+        coeff, exponent, i = _term(s, i)
+        coeffs[exponent] = coeffs.get(exponent, Fraction(0)) + sign * coeff
+        i = _skip(s, i)
+        <span class="k">if</span> i &gt;= len(s):
+            <span class="k">return</span> coeffs
+        <span class="k">if</span> s[i] <span class="k">not</span> <span class="k">in</span> <span class="s">&#x27;+-&#x27;</span>:
+            <span class="k">raise</span> ParseError(<span class="s">&#x27;unexpected symbol &quot;%s&quot; - put a &quot;+&quot; or a &quot;-&quot; &#x27;</span>
+                             <span class="s">&#x27;between two terms&#x27;</span> % s[i])
+        sign = -1 <span class="k">if</span> s[i] == <span class="s">&#x27;-&#x27;</span> <span class="k">else</span> 1
+        i = _skip(s, i + 1)
+
+
+<span class="k">def</span> parse(equation):
+    <span class="s">&quot;&quot;&quot;Return (reduced coefficients, left coefficients, right coefficients).&quot;&quot;&quot;</span>
+    sides = equation.split(<span class="s">&#x27;=&#x27;</span>)
+    <span class="k">if</span> len(sides) != 2:
+        <span class="k">raise</span> ParseError(<span class="s">&#x27;an equation must have exactly one &quot;=&quot;&#x27;</span>)
+    left = parse_side(sides[0])
+    right = parse_side(sides[1])
+    coeffs = dict(left)
+    <span class="k">for</span> exponent, coeff <span class="k">in</span> right.items():
+        coeffs[exponent] = coeffs.get(exponent, Fraction(0)) - coeff
+    <span class="k">return</span> coeffs, left, right
+
+
+<span class="cm"># --------------------------------------------------------------------------</span>
+<span class="cm"># arithmetic without a math library</span>
+<span class="cm"># --------------------------------------------------------------------------</span>
+
+<span class="k">def</span> int_sqrt(n):
+    <span class="s">&quot;&quot;&quot;Return the integer square root of n by Newton&#x27;s method.&quot;&quot;&quot;</span>
+    <span class="k">if</span> n &lt; 2:
+        <span class="k">return</span> n
+    x, y = n, (n + 1) // 2
+    <span class="k">while</span> y &lt; x:
+        x, y = y, (y + n // y) // 2
+    <span class="k">return</span> x
+
+
+<span class="k">def</span> exact_sqrt(value):
+    <span class="s">&quot;&quot;&quot;Return the exact square root of a Fraction, or None when it is irrational.&quot;&quot;&quot;</span>
+    <span class="k">if</span> value &lt; 0:
+        <span class="k">return</span> <span class="k">None</span>
+    top, bottom = int_sqrt(value.numerator), int_sqrt(value.denominator)
+    <span class="k">if</span> top * top == value.numerator <span class="k">and</span> bottom * bottom == value.denominator:
+        <span class="k">return</span> Fraction(top, bottom)
+    <span class="k">return</span> <span class="k">None</span>
+
+
+<span class="k">def</span> my_sqrt(value):
+    <span class="s">&quot;&quot;&quot;Return the square root of a number by Newton&#x27;s method.&quot;&quot;&quot;</span>
+    x = float(value)
+    <span class="k">if</span> x &lt;= 0:
+        <span class="k">return</span> 0.0
+    guess = x <span class="k">if</span> x &gt;= 1 <span class="k">else</span> 1.0
+    <span class="k">for</span> _ <span class="k">in</span> range(80):
+        better = (guess + x / guess) / 2
+        <span class="k">if</span> better == guess:
+            <span class="k">break</span>
+        guess = better
+    <span class="k">return</span> guess
+
+
+<span class="k">def</span> root_of(value):
+    <span class="s">&quot;&quot;&quot;Return the exact square root when it exists, else the float one.&quot;&quot;&quot;</span>
+    exact = exact_sqrt(value)
+    <span class="k">return</span> exact <span class="k">if</span> exact <span class="k">is</span> <span class="k">not</span> <span class="k">None</span> <span class="k">else</span> my_sqrt(value)
+
+
+<span class="cm"># --------------------------------------------------------------------------</span>
+<span class="cm"># formatting</span>
+<span class="cm"># --------------------------------------------------------------------------</span>
+
+<span class="k">def</span> g(x):
+    <span class="s">&quot;&quot;&quot;Format a number like the subject examples. Never print a negative zero.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="s">&#x27;%g&#x27;</span> % (float(x) + 0.0)
+
+
+<span class="k">def</span> show(value, opts):
+    <span class="s">&quot;&quot;&quot;Format a solution. Add the irreducible fraction when --fractions is on.&quot;&quot;&quot;</span>
+    <span class="k">if</span> opts[<span class="s">&#x27;fractions&#x27;</span>] <span class="k">and</span> isinstance(value, Fraction):
+        <span class="k">return</span> str(value) <span class="k">if</span> value.denominator == 1 <span class="k">else</span> <span class="s">&#x27;%s (%s)&#x27;</span> % (value, g(value))
+    <span class="k">return</span> g(value)
+
+
+<span class="k">def</span> reduced_form(coeffs):
+    <span class="s">&quot;&quot;&quot;Return (the reduced form text, the degree).&quot;&quot;&quot;</span>
+    degree = max((d <span class="k">for</span> d, c <span class="k">in</span> coeffs.items() <span class="k">if</span> c != 0), default=0)
+    parts = [<span class="s">&#x27;%s * X^0&#x27;</span> % g(coeffs.get(0, Fraction(0)))]
+    <span class="k">for</span> d <span class="k">in</span> range(1, degree + 1):
+        c = coeffs.get(d, Fraction(0))
+        parts.append(<span class="s">&#x27;%s %s * X^%d&#x27;</span> % (<span class="s">&#x27;+&#x27;</span> <span class="k">if</span> c &gt;= 0 <span class="k">else</span> <span class="s">&#x27;-&#x27;</span>, g(abs(c)), d))
+    <span class="k">return</span> <span class="s">&#x27; &#x27;</span>.join(parts) + <span class="s">&#x27; = 0&#x27;</span>, degree
+
+
+<span class="k">def</span> coefficient_table(coeffs, left, right, out):
+    <span class="s">&quot;&quot;&quot;Print every collected term per side, so a reader can check the reduction.&quot;&quot;&quot;</span>
+    out(<span class="s">&#x27;Coefficients:&#x27;</span>)
+    out(<span class="s">&#x27;  X^n | left       | right      | left - right&#x27;</span>)
+    <span class="k">for</span> d <span class="k">in</span> sorted(set(left) | set(right) | set(coeffs)):
+        out(<span class="s">&#x27;  %3d | %10s | %10s | %s&#x27;</span> % (
+            d, left.get(d, Fraction(0)), right.get(d, Fraction(0)),
+            coeffs.get(d, Fraction(0))))
+
+
+<span class="k">def</span> plot(a, b, c, roots, out):
+    <span class="s">&quot;&quot;&quot;Draw the curve with ASCII characters. O marks a root.&quot;&quot;&quot;</span>
+    <span class="cm"># ponytail: fixed 61x21 grid, enough to read the shape at a defense.</span>
+    width, height = 61, 21
+    xs = [float(r) <span class="k">for</span> r <span class="k">in</span> roots <span class="k">if</span> <span class="k">not</span> isinstance(r, complex)]
+    <span class="k">if</span> xs:
+        lo, hi = min(xs), max(xs)
+        pad = max(hi - lo, 1.0)
+        lo, hi = lo - pad, hi + pad
+    <span class="k">else</span>:
+        lo, hi = -5.0, 5.0
+    a, b, c = float(a), float(b), float(c)
+    ys = [a * x * x + b * x + c
+          <span class="k">for</span> x <span class="k">in</span> (lo + (hi - lo) * i / (width - 1) <span class="k">for</span> i <span class="k">in</span> range(width))]
+    top, bottom = max(ys), min(ys)
+    <span class="k">if</span> top == bottom:
+        top, bottom = top + 1.0, bottom - 1.0
+
+    <span class="k">def</span> row(y):
+        r = int((top - y) / (top - bottom) * (height - 1) + 0.5)
+        <span class="k">return</span> min(max(r, 0), height - 1)
+
+    <span class="k">def</span> col(x):
+        <span class="k">return</span> min(max(int((x - lo) / (hi - lo) * (width - 1) + 0.5), 0), width - 1)
+
+    grid = [[<span class="s">&#x27; &#x27;</span>] * width <span class="k">for</span> _ <span class="k">in</span> range(height)]
+    axis = row(0.0) <span class="k">if</span> bottom &lt;= 0 &lt;= top <span class="k">else</span> <span class="k">None</span>
+    <span class="k">if</span> axis <span class="k">is</span> <span class="k">not</span> <span class="k">None</span>:
+        grid[axis] = [<span class="s">&#x27;-&#x27;</span>] * width
+    <span class="k">for</span> i, y <span class="k">in</span> enumerate(ys):
+        grid[row(y)][i] = <span class="s">&#x27;*&#x27;</span>
+    <span class="k">for</span> x <span class="k">in</span> xs:
+        <span class="k">if</span> lo &lt;= x &lt;= hi:
+            grid[axis <span class="k">if</span> axis <span class="k">is</span> <span class="k">not</span> <span class="k">None</span> <span class="k">else</span> height - 1][col(x)] = <span class="s">&#x27;O&#x27;</span>
+    out(<span class="s">&#x27;Plot: x from %s to %s, y from %s to %s, O marks a root&#x27;</span>
+        % (g(lo), g(hi), g(bottom), g(top)))
+    <span class="k">for</span> line <span class="k">in</span> grid:
+        out(<span class="s">&#x27;  &#x27;</span> + <span class="s">&#x27;&#x27;</span>.join(line).rstrip())
+
+
+<span class="cm"># --------------------------------------------------------------------------</span>
+<span class="cm"># solving</span>
+<span class="cm"># --------------------------------------------------------------------------</span>
+
+<span class="k">def</span> solve(coeffs, degree, out, opts):
+    a = coeffs.get(2, Fraction(0))
+    b = coeffs.get(1, Fraction(0))
+    c = coeffs.get(0, Fraction(0))
+    roots = []
+    <span class="k">if</span> degree == 0:
+        <span class="cm"># The subject prints no degree line for a degree 0 equation.</span>
+        out(<span class="s">&#x27;Any real number is a solution.&#x27;</span> <span class="k">if</span> c == 0 <span class="k">else</span> <span class="s">&#x27;No solution.&#x27;</span>)
+        <span class="k">return</span> roots
+    out(<span class="s">&#x27;Polynomial degree: %d&#x27;</span> % degree)
+    <span class="k">if</span> degree &gt; 2:
+        out(<span class="s">&quot;The polynomial degree is strictly greater than 2, I can&#x27;t solve.&quot;</span>)
+        <span class="k">return</span> roots
+    <span class="k">if</span> degree == 1:
+        <span class="k">if</span> opts[<span class="s">&#x27;steps&#x27;</span>]:
+            out(<span class="s">&#x27;[steps] b = %s, c = %s&#x27;</span> % (b, c))
+            out(<span class="s">&#x27;[steps] b * X + c = 0, so X = -c / b = -(%s) / (%s)&#x27;</span> % (c, b))
+        root = -c / b
+        roots = [root]
+        out(<span class="s">&#x27;The solution is:&#x27;</span>)
+        out(show(root, opts))
+        <span class="k">return</span> roots
+    disc = b * b - 4 * a * c
+    <span class="k">if</span> opts[<span class="s">&#x27;steps&#x27;</span>]:
+        out(<span class="s">&#x27;[steps] a = %s, b = %s, c = %s&#x27;</span> % (a, b, c))
+        out(<span class="s">&#x27;[steps] discriminant = b^2 - 4*a*c = (%s)^2 - 4*(%s)*(%s) = %s&#x27;</span>
+            % (b, a, c, disc))
+        out(<span class="s">&#x27;[steps] the discriminant is exact, so its sign is exact&#x27;</span>)
+    <span class="k">if</span> disc &gt; 0:
+        r = root_of(disc)
+        <span class="k">if</span> opts[<span class="s">&#x27;steps&#x27;</span>]:
+            out(<span class="s">&#x27;[steps] sqrt(%s) = %s%s&#x27;</span> % (disc, r,
+                                             <span class="s">&#x27;&#x27;</span> <span class="k">if</span> isinstance(r, Fraction) <span class="k">else</span> <span class="s">&#x27; (Newton)&#x27;</span>))
+            out(<span class="s">&#x27;[steps] X = (-b -+ sqrt(D)) / (2*a), 2*a = %s&#x27;</span> % (2 * a))
+        roots = [(-b - r) / (2 * a), (-b + r) / (2 * a)]
+        out(<span class="s">&#x27;Discriminant is strictly positive, the two solutions are:&#x27;</span>)
+        out(show(roots[0], opts))
+        out(show(roots[1], opts))
+    <span class="k">elif</span> disc == 0:
+        <span class="k">if</span> opts[<span class="s">&#x27;steps&#x27;</span>]:
+            out(<span class="s">&#x27;[steps] X = -b / (2*a) = -(%s) / (%s)&#x27;</span> % (b, 2 * a))
+        roots = [-b / (2 * a)]
+        out(<span class="s">&#x27;Discriminant is zero, the solution is:&#x27;</span>)
+        out(show(roots[0], opts))
+    <span class="k">else</span>:
+        real = -b / (2 * a)
+        r = root_of(-disc)
+        imaginary = r / (2 * a)
+        <span class="k">if</span> opts[<span class="s">&#x27;steps&#x27;</span>]:
+            out(<span class="s">&#x27;[steps] sqrt(-D) = sqrt(%s) = %s&#x27;</span> % (-disc, r))
+            out(<span class="s">&#x27;[steps] X = -b / (2*a) -+ i * sqrt(-D) / (2*a)&#x27;</span>)
+        roots = [complex(float(real), float(abs(imaginary))),
+                 complex(float(real), -float(abs(imaginary)))]
+        out(<span class="s">&#x27;Discriminant is strictly negative, the two complex solutions are:&#x27;</span>)
+        out(<span class="s">&#x27;%s + %si&#x27;</span> % (show(real, opts), show(abs(imaginary), opts)))
+        out(<span class="s">&#x27;%s - %si&#x27;</span> % (show(real, opts), show(abs(imaginary), opts)))
+    <span class="k">return</span> roots
+
+
+<span class="k">def</span> run(equation, out=print, opts=<span class="k">None</span>):
+    opts = DEFAULTS <span class="k">if</span> opts <span class="k">is</span> <span class="k">None</span> <span class="k">else</span> opts
+    coeffs, left, right = parse(equation)
+    <span class="k">if</span> opts[<span class="s">&#x27;verbose&#x27;</span>]:
+        coefficient_table(coeffs, left, right, out)
+    form, degree = reduced_form(coeffs)
+    out(<span class="s">&#x27;Reduced form: %s&#x27;</span> % form)
+    roots = solve(coeffs, degree, out, opts)
+    <span class="k">if</span> opts[<span class="s">&#x27;plot&#x27;</span>]:
+        plot(coeffs.get(2, Fraction(0)), coeffs.get(1, Fraction(0)),
+             coeffs.get(0, Fraction(0)), roots, out)
+
+
+FLAGS = {<span class="s">&#x27;--steps&#x27;</span>: <span class="s">&#x27;steps&#x27;</span>, <span class="s">&#x27;--fractions&#x27;</span>: <span class="s">&#x27;fractions&#x27;</span>,
+         <span class="s">&#x27;--verbose&#x27;</span>: <span class="s">&#x27;verbose&#x27;</span>, <span class="s">&#x27;--plot&#x27;</span>: <span class="s">&#x27;plot&#x27;</span>}
+DEFAULTS = {name: <span class="k">False</span> <span class="k">for</span> name <span class="k">in</span> FLAGS.values()}
+
+
+<span class="k">def</span> main(argv):
+    opts = dict(DEFAULTS)
+    args = []
+    <span class="k">for</span> arg <span class="k">in</span> argv:
+        <span class="k">if</span> arg <span class="k">in</span> FLAGS:
+            opts[FLAGS[arg]] = <span class="k">True</span>
+        <span class="k">elif</span> arg <span class="k">in</span> (<span class="s">&#x27;-h&#x27;</span>, <span class="s">&#x27;--help&#x27;</span>):
+            print(USAGE)
+            <span class="k">return</span> 0
+        <span class="k">elif</span> arg[:1] == <span class="s">&#x27;-&#x27;</span> <span class="k">and</span> len(arg) &gt; 1 <span class="k">and</span> arg[1] <span class="k">not</span> <span class="k">in</span> DIGITS + <span class="s">&#x27;.&#x27;</span>:
+            print(<span class="s">&#x27;error: unknown option &quot;%s&quot;&#x27;</span> % arg, file=sys.stderr)
+            print(USAGE, file=sys.stderr)
+            <span class="k">return</span> 1
+        <span class="k">else</span>:
+            args.append(arg)
+    <span class="k">if</span> len(args) &gt; 1:
+        print(<span class="s">&#x27;error: give exactly one equation&#x27;</span>, file=sys.stderr)
+        <span class="k">return</span> 1
+    equation = args[0] <span class="k">if</span> args <span class="k">else</span> sys.stdin.readline().strip()
+    <span class="k">if</span> <span class="k">not</span> equation:
+        print(USAGE, file=sys.stderr)
+        <span class="k">return</span> 1
+    <span class="k">try</span>:
+        run(equation, opts=opts)
+    <span class="k">except</span> ParseError as error:
+        print(<span class="s">&#x27;error: %s&#x27;</span> % error, file=sys.stderr)
+        <span class="k">return</span> 1
+    <span class="k">return</span> 0
+
+
+<span class="k">if</span> __name__ == <span class="s">&#x27;__main__&#x27;</span>:
+    sys.exit(main(sys.argv[1:]))</pre></div>
+</section>
+<!-- ==================== defects ==================== -->
+<section id="defects">
+  <div class="sec-head">
+    <div class="eyebrow">What broke, and what stops it coming back</div>
+    <h2>Defects and edge cases</h2>
+    <p>Five defects were found by running the program against inputs the subject allows but the
+    worked examples never show. Each row has a test in <code>test_computor.py</code>, so the fix
+    cannot silently regress.</p>
+  </div>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Input</th><th>Was</th><th>Is</th><th>Fix</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>0.1 * X^0 + 0.3 * X^1 + 0.225 * X^2 = 0</code></td>
+        <td>D read as <code>-1.4e-17</code>, printed two complex roots</td>
+        <td><code>Discriminant is zero</code>, root <code>-0.666667</code></td>
+        <td>D computed as a <code>Fraction</code> <span class="tag fixed">A</span></td>
+      </tr>
+      <tr>
+        <td><code>3 * X^1 = 0 * X^0</code></td>
+        <td><code>-0</code></td>
+        <td><code>0</code></td>
+        <td><code>g()</code> adds <code>0.0</code> before <code>%g</code> <span class="tag fixed">B</span></td>
+      </tr>
+      <tr>
+        <td><code>1e10 * X^0 + 1 * X^1 = 0</code></td>
+        <td>read as <code>10</code>, silently wrong</td>
+        <td><code>1e+10</code></td>
+        <td>the scanner reads an exponent suffix <span class="tag fixed">C</span></td>
+      </tr>
+      <tr>
+        <td><code>5 * Y^0 = 0 * X^0</code></td>
+        <td>term dropped, printed <em>Any real number is a solution.</em></td>
+        <td><code>error: a "*" must be followed by X</code>, exit 1</td>
+        <td>the scanner rejects leftover text <span class="tag fixed">D</span></td>
+      </tr>
+      <tr>
+        <td><code>hello</code></td>
+        <td>Python traceback, <code>ValueError</code></td>
+        <td><code>error: an equation must have exactly one "="</code>, exit 1</td>
+        <td><code>ParseError</code>, caught in <code>main()</code> <span class="tag fixed">E</span></td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>Edge cases an evaluator reaches for</h3>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Input</th><th>Output</th><th>Why it is not obvious</th></tr></thead>
+    <tbody>
+      <tr><td><code>6 * X^0 = 6 * X^0</code></td><td>Any real number is a solution.</td><td>Degree 0 with <code>c = 0</code>. The subject prints no degree line.</td></tr>
+      <tr><td><code>10 * X^0 = 15 * X^0</code></td><td>No solution.</td><td>Degree 0 with <code>c &ne; 0</code>. <code>-5 = 0</code> is false for every X.</td></tr>
+      <tr><td><code>0 * X^2 + 3 * X^1 + 2 * X^0 = 0</code></td><td>degree 1, root <code>-0.666667</code></td><td>A zero leading coefficient lowers the degree. Solving it as a quadratic divides by zero.</td></tr>
+      <tr><td><code>1 * X^0 + 1 * X^1 + 1 * X^2 + 1 * X^3 = 1 * X^3</code></td><td>degree 2, two complex roots</td><td>The cubic terms cancel across the <code>=</code>, so the degree drops to 2 and it becomes solvable.</td></tr>
+      <tr><td><code>1 * X^2 = 0 * X^0</code></td><td>degree 2, root <code>0</code></td><td>D is zero and the root is zero. The old code printed <code>-0</code>.</td></tr>
+      <tr><td><code>5 * X^0 = 4 * X^0 + 4 * X^1</code></td><td>degree 1, root <code>0.25</code></td><td>Terms live on the right side. The sign flips when they move left.</td></tr>
+      <tr><td><code>-4 * X^0 + 1 * X^2 = 0</code></td><td>roots <code>-2</code> and <code>2</code></td><td><code>&radic;16</code> is exact, so the roots print as whole numbers, not <code>2.00000</code>.</td></tr>
+      <tr><td><code>= 5</code></td><td><code>error: one side of the equation is empty</code></td><td>An empty side is a syntax error, not an implicit zero.</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<!-- ==================== bonus ==================== -->
+<section id="bonus">
+  <div class="sec-head">
+    <div class="eyebrow">Six features past the mandatory part</div>
+    <h2>Bonus tour</h2>
+    <p>Free form entry is assessed on its own. The five flags after it are the five additional
+    features. Every default run stays byte-identical to the subject examples, because each bonus
+    is behind a flag.</p>
+  </div>
+
+  <h3>Free form entry</h3>
+  <div class="prose"><p>One grammar reads both forms. The coefficient, the <code>*</code> and the
+  <code>^n</code> are each optional, so <code>X</code> means <code>1 * X^1</code> and a bare
+  <code>5</code> means <code>5 * X^0</code>.</p></div>
+  <div class="term" style="margin-top:12px">
+<div class="cmd">python3 computor.py "5 + 4 * X + X^2 = X^2"</div>
+<pre>Reduced form: 5 * X^0 + 4 * X^1 = 0
+Polynomial degree: 1
+The solution is:
+-1.25</pre>
+<div class="cmd" style="margin-top:12px">python3 computor.py "5 + 4x = 4"</div>
+<pre>Reduced form: 1 * X^0 + 4 * X^1 = 0
+Polynomial degree: 1
+The solution is:
+-0.25</pre>
+  </div>
+
+  <h3>1 &middot; Entry mistakes</h3>
+  <div class="term">
+<div class="cmd">python3 computor.py "5 * Y^0 = 0 * X^0"; echo $?</div>
+<pre><span class="bad">error: a "*" must be followed by X</span>
+1</pre>
+<div class="cmd" style="margin-top:12px">python3 computor.py "5 * X^-1 = 0"; echo $?</div>
+<pre><span class="bad">error: an exponent must be a whole number, 0 or more</span>
+1</pre>
+  </div>
+
+  <h3>2 &middot; Irreducible fractions &mdash; <code>--fractions</code></h3>
+  <div class="term">
+<div class="cmd">python3 computor.py --fractions "5 * X^0 + 4 * X^1 = 4 * X^0"</div>
+<pre>Reduced form: 1 * X^0 + 4 * X^1 = 0
+Polynomial degree: 1
+The solution is:
+-1/4 (-0.25)</pre>
+  </div>
+
+  <h3>3 &middot; Intermediate steps &mdash; <code>--steps</code></h3>
+  <div class="term">
+<div class="cmd">python3 computor.py --steps "1 * X^0 + 2 * X^1 + 5 * X^2 = 0"</div>
+<pre>Reduced form: 1 * X^0 + 2 * X^1 + 5 * X^2 = 0
+Polynomial degree: 2
+[steps] a = 5, b = 2, c = 1
+[steps] discriminant = b^2 - 4*a*c = (2)^2 - 4*(5)*(1) = -16
+[steps] the discriminant is exact, so its sign is exact
+[steps] sqrt(-D) = sqrt(16) = 4
+[steps] X = -b / (2*a) -+ i * sqrt(-D) / (2*a)
+Discriminant is strictly negative, the two complex solutions are:
+-0.2 + 0.4i
+-0.2 - 0.4i</pre>
+  </div>
+
+  <h3>4 &middot; Coefficient table &mdash; <code>--verbose</code></h3>
+  <div class="term">
+<div class="cmd">python3 computor.py --verbose "5 * X^0 + 4 * X^1 - 9.3 * X^2 = 1 * X^0"</div>
+<pre>Coefficients:
+  X^n | left       | right      | left - right
+    0 |          5 |          1 | 4
+    1 |          4 |          0 | 4
+    2 |     -93/10 |          0 | -93/10
+Reduced form: 4 * X^0 + 4 * X^1 - 9.3 * X^2 = 0
+Polynomial degree: 2
+Discriminant is strictly positive, the two solutions are:
+0.905239
+-0.475131</pre>
+  </div>
+  <div class="prose" style="margin-top:12px"><p><code>-93/10</code> is the point: the coefficient
+  never became <code>-9.3000000000000007</code>.</p></div>
+
+  <h3>5 &middot; ASCII curve &mdash; <code>--plot</code></h3>
+  <div class="term">
+<div class="cmd">python3 computor.py --plot "-4 * X^0 + 1 * X^2 = 0"</div>
+<pre>Reduced form: -4 * X^0 + 0 * X^1 + 1 * X^2 = 0
+Polynomial degree: 2
+Discriminant is strictly positive, the two solutions are:
+-2
+2
+Plot: x from -6 to 6, y from -4 to 32, O marks a root
+  *                                                           *
+   *                                                         *
+
+    *                                                       *
+     *                                                     *
+      *                                                   *
+       *                                                 *
+        *                                               *
+         *                                             *
+          *                                           *
+           *                                         *
+            *                                       *
+             *                                     *
+              *                                   *
+               **                               **
+                 *                             *
+                  **                         **
+                    **                     **
+  --------------------O*-----------------*O--------------------
+                        ****         ****
+                            *********</pre>
+  </div>
+</section>
+
+<!-- ==================== defense ==================== -->
+<section id="defense">
+  <div class="sec-head">
+    <div class="eyebrow">Answers, short</div>
+    <h2>Defense notes</h2>
+    <p>The questions a peer evaluator asks, and the shortest true answer to each.</p>
+  </div>
+  <div class="panel pad qa">
+    <div class="item"><div class="q">Where is the discriminant, and why that formula?</div>
+      <div class="a">In <code>solve()</code>: <code>disc = b*b - 4*a*c</code>. It is what is left under
+      the square root after completing the square, so its sign decides whether the square root is
+      real. Nothing else in the quadratic formula can change the number of real roots.</div></div>
+    <div class="item"><div class="q">Show me that you did not use a math library.</div>
+      <div class="a">The file imports <code>sys</code> and <code>fractions</code>, nothing else.
+      <code>int_sqrt</code> and <code>my_sqrt</code> are Newton iterations written in the file.
+      Run <code>grep import computor.py</code>.</div></div>
+    <div class="item"><div class="q">Is <code>Fraction</code> cheating?</div>
+      <div class="a">It is a number type that adds, subtracts, multiplies and divides &mdash; the
+      four operations the subject allows. It computes no root and no power. Without it the
+      discriminant sign is wrong for decimal coefficients, which is a correctness bug, not a
+      shortcut.</div></div>
+    <div class="item"><div class="q">What happens with <code>0 * X^2 + 3 * X^1 = 0</code>?</div>
+      <div class="a">Degree 1, not 2. <code>reduced_form()</code> takes the largest exponent whose
+      coefficient is <em>not zero</em>. Treating it as degree 2 would divide by <code>2a = 0</code>.</div></div>
+    <div class="item"><div class="q">Why print no degree line for a degree 0 equation?</div>
+      <div class="a">Because the subject's own examples do not print one. Match the subject output
+      byte for byte; the six worked examples are asserted in <code>test_computor.py</code>.</div></div>
+    <div class="item"><div class="q">Why does <code>0.905239</code> have six digits?</div>
+      <div class="a"><code>g()</code> formats with <code>%g</code>, which is six significant digits
+      and drops trailing zeros. The subject screenshots use the same format.</div></div>
+    <div class="item"><div class="q">What does your program do with garbage input?</div>
+      <div class="a">It raises <code>ParseError</code>, prints <code>error: &lt;reason&gt;</code> on
+      stderr, and exits 1. No traceback. The scanner rejects any character the grammar does not
+      accept, so no term is ever dropped in silence.</div></div>
+    <div class="item"><div class="q">How do you know the complex roots are right?</div>
+      <div class="a">Substitute them back. For <code>1 + 2X + 5X&sup2;</code> the roots are
+      <code>-0.2 &plusmn; 0.4i</code>; their sum is <code>-b/a = -0.4</code> and their product is
+      <code>c/a = 0.2</code>. Both hold.</div></div>
+    <div class="item"><div class="q">Why Newton for the square root?</div>
+      <div class="a">It doubles the correct digits each pass, needs only divide and add, and stops
+      when the guess stops moving. On whole numbers the same iteration is exact, which is how
+      <code>&radic;16 = 4</code> stays a fraction instead of becoming <code>4.000000000000001</code>.</div></div>
+    <div class="item"><div class="q">Where is your Makefile?</div>
+      <div class="a">The subject asks for one only for a compiled language. This is Python; the
+      entry point is <code>python3 computor.py</code>.</div></div>
+  </div>
+</section>
+
+<!-- ==================== commands ==================== -->
+<section id="commands">
+  <div class="sec-head">
+    <div class="eyebrow">Copy and run</div>
+    <h2>Commands</h2>
+    <p>The tests first, then the six subject examples, then the flags.</p>
+  </div>
+  <div class="term">
+<div class="cmd">python3 test_computor.py</div>
+<pre>OK: 32 checks pass</pre>
+<div class="cmd" style="margin-top:14px">python3 computor.py "5 * X^0 + 4 * X^1 - 9.3 * X^2 = 1 * X^0"</div>
+<div class="cmd">python3 computor.py "5 * X^0 + 4 * X^1 = 4 * X^0"</div>
+<div class="cmd">python3 computor.py "8 * X^0 - 6 * X^1 + 0 * X^2 - 5.6 * X^3 = 3 * X^0"</div>
+<div class="cmd">python3 computor.py "6 * X^0 = 6 * X^0"</div>
+<div class="cmd">python3 computor.py "10 * X^0 = 15 * X^0"</div>
+<div class="cmd">python3 computor.py "1 * X^0 + 2 * X^1 + 5 * X^2 = 0"</div>
+<div class="cmd" style="margin-top:14px">echo "5 * X^0 + 4 * X^1 = 4 * X^0" | python3 computor.py</div>
+<div class="cmd" style="margin-top:14px">python3 computor.py "5 + 4 * X + X^2 = X^2"</div>
+<div class="cmd">python3 computor.py --fractions "5 * X^0 + 4 * X^1 = 4 * X^0"</div>
+<div class="cmd">python3 computor.py --steps "1 * X^0 + 2 * X^1 + 5 * X^2 = 0"</div>
+<div class="cmd">python3 computor.py --verbose "5 * X^0 + 4 * X^1 - 9.3 * X^2 = 1 * X^0"</div>
+<div class="cmd">python3 computor.py --plot "-4 * X^0 + 1 * X^2 = 0"</div>
+<div class="cmd">python3 computor.py --help</div>
+  </div>
+</section>
+
+<footer>
+  <span>computorv1 &middot; 42 Abu Dhabi &middot; subject version 6.3</span>
+  <span>Solver in this page: exact BigInt fractions, same algorithm as <code>computor.py</code></span>
+</footer>
+</main>
+</div>
+<script>
+"use strict";
+/* ------------------------------------------------------------------
+   Exact rational arithmetic over BigInt.
+   This mirrors Python's fractions.Fraction, so the page reaches the
+   same conclusions as computor.py, including on the D = 0 case.
+------------------------------------------------------------------ */
+function gcd(a, b) {
+  a = a < 0n ? -a : a; b = b < 0n ? -b : b;
+  while (b) { const t = a % b; a = b; b = t; }
+  return a;
+}
+class F {
+  constructor(n, d = 1n) {
+    if (d === 0n) throw new Error("division by zero");
+    if (d < 0n) { n = -n; d = -d; }
+    const g = gcd(n, d) || 1n;
+    this.n = n / g; this.d = d / g;
+  }
+  add(o) { return new F(this.n * o.d + o.n * this.d, this.d * o.d); }
+  sub(o) { return new F(this.n * o.d - o.n * this.d, this.d * o.d); }
+  mul(o) { return new F(this.n * o.n, this.d * o.d); }
+  div(o) { return new F(this.n * o.d, this.d * o.n); }
+  neg()  { return new F(-this.n, this.d); }
+  abs()  { return this.n < 0n ? this.neg() : this; }
+  sign() { return this.n < 0n ? -1 : (this.n > 0n ? 1 : 0); }
+  eqZero() { return this.n === 0n; }
+  toNumber() { return Number(this.n) / Number(this.d); }
+  toString() { return this.d === 1n ? String(this.n) : this.n + "/" + this.d; }
+}
+const ZERO = new F(0n), ONE = new F(1n);
+F.fromDecimal = function (text) {
+  const m = /^(\d*)(?:\.(\d*))?(?:[eE]([+-]?\d+))?$/.exec(text);
+  const whole = m[1] || "0", frac = m[2] || "", exp = m[3] ? parseInt(m[3], 10) : 0;
+  let n = BigInt(whole + frac), d = 10n ** BigInt(frac.length);
+  if (exp > 0) n *= 10n ** BigInt(exp); else if (exp < 0) d *= 10n ** BigInt(-exp);
+  return new F(n, d);
+};
+/* integer square root, Newton, no math library */
+function intSqrt(n) {
+  if (n < 2n) return n;
+  let x = n, y = (n + 1n) / 2n;
+  while (y < x) { x = y; y = (y + n / y) / 2n; }
+  return x;
+}
+function exactSqrt(f) {
+  if (f.sign() < 0) return null;
+  const a = intSqrt(f.n), b = intSqrt(f.d);
+  return (a * a === f.n && b * b === f.d) ? new F(a, b) : null;
+}
+function mySqrt(f) {
+  let x = f.toNumber();
+  if (x <= 0) return 0;
+  let guess = x >= 1 ? x : 1;
+  for (let i = 0; i < 80; i++) {
+    const better = (guess + x / guess) / 2;
+    if (better === guess) break;
+    guess = better;
+  }
+  return guess;
+}
+function rootOf(f) { const e = exactSqrt(f); return e !== null ? e : mySqrt(f); }
+
+/* ------------------------------------------------------------------
+   %g, six significant digits, no negative zero. Matches Python.
+------------------------------------------------------------------ */
+function g(value) {
+  let v = (value instanceof F) ? value.toNumber() : Number(value);
+  if (v === 0) v = 0;
+  if (!isFinite(v)) return String(v);
+  const e = v === 0 ? 0 : Math.floor(Math.log10(Math.abs(v)));
+  let s;
+  if (e < -4 || e >= 6) {
+    s = v.toExponential(5).replace(/\.?0+e/, "e").replace(/e([+-])(\d)$/, "e$10$2");
+  } else {
+    s = v.toPrecision(6);
+    if (s.indexOf(".") >= 0) s = s.replace(/\.?0+$/, "");
+  }
+  return s;
+}
+function show(value, opts) {
+  if (opts.fractions && value instanceof F) {
+    return value.d === 1n ? value.toString() : value.toString() + " (" + g(value) + ")";
+  }
+  return g(value);
+}
+
+/* ------------------------------------------------------------------
+   Parser. Same grammar as parse_side() in computor.py:
+     side := term (('+'|'-') term)*
+     term := [number] ['*'] [X ['^' whole]]
+------------------------------------------------------------------ */
+function ParseError(message) { this.message = message; }
+ParseError.prototype.toString = function () { return this.message; };
+
+const DIGITS = "0123456789";
+function skip(s, i) { while (i < s.length && (s[i] === " " || s[i] === "\t")) i++; return i; }
+
+function readNumber(s, i) {
+  const start = i;
+  while (i < s.length && DIGITS.indexOf(s[i]) >= 0) i++;
+  if (i < s.length && s[i] === ".") { i++; while (i < s.length && DIGITS.indexOf(s[i]) >= 0) i++; }
+  if (i === start) return [null, start];
+  if (s.slice(start, i) === ".") throw new ParseError('a lone "." is not a number');
+  let end = i;
+  if (end < s.length && (s[end] === "e" || s[end] === "E")) {
+    let j = end + 1;
+    if (j < s.length && (s[j] === "+" || s[j] === "-")) j++;
+    const k = j;
+    while (j < s.length && DIGITS.indexOf(s[j]) >= 0) j++;
+    if (j > k) end = j;
+  }
+  return [F.fromDecimal(s.slice(start, end)), end];
+}
+
+function readTerm(s, i) {
+  let coeff; [coeff, i] = readNumber(s, i);
+  i = skip(s, i);
+  const star = i < s.length && s[i] === "*";
+  if (star) i = skip(s, i + 1);
+  if (i < s.length && (s[i] === "X" || s[i] === "x")) {
+    i = skip(s, i + 1);
+    let exponent = 1;
+    if (i < s.length && s[i] === "^") {
+      i = skip(s, i + 1);
+      let value; [value, i] = readNumber(s, i);
+      if (value === null || value.sign() < 0 || value.d !== 1n) {
+        throw new ParseError("an exponent must be a whole number, 0 or more");
+      }
+      exponent = Number(value.n);
+    }
+    return [coeff === null ? ONE : coeff, exponent, i];
+  }
+  if (star) throw new ParseError('a "*" must be followed by X');
+  if (coeff === null) {
+    if (i >= s.length) throw new ParseError("a term is missing at the end of a side");
+    throw new ParseError('unexpected symbol "' + s[i] + '"');
+  }
+  return [coeff, 0, i];
+}
+
+function parseSide(s) {
+  let i = skip(s, 0);
+  if (i >= s.length) throw new ParseError("one side of the equation is empty");
+  let sign = 1;
+  if (s[i] === "+" || s[i] === "-") { sign = s[i] === "-" ? -1 : 1; i = skip(s, i + 1); }
+  const coeffs = new Map();
+  for (;;) {
+    let coeff, exponent;
+    [coeff, exponent, i] = readTerm(s, i);
+    const signed = sign < 0 ? coeff.neg() : coeff;
+    coeffs.set(exponent, (coeffs.get(exponent) || ZERO).add(signed));
+    i = skip(s, i);
+    if (i >= s.length) return coeffs;
+    if (s[i] !== "+" && s[i] !== "-") {
+      throw new ParseError('unexpected symbol "' + s[i] + '" - put a "+" or a "-" between two terms');
+    }
+    sign = s[i] === "-" ? -1 : 1;
+    i = skip(s, i + 1);
+  }
+}
+
+function parseEquation(equation) {
+  const sides = equation.split("=");
+  if (sides.length !== 2) throw new ParseError('an equation must have exactly one "="');
+  const left = parseSide(sides[0]), right = parseSide(sides[1]);
+  const coeffs = new Map(left);
+  right.forEach(function (coeff, exponent) {
+    coeffs.set(exponent, (coeffs.get(exponent) || ZERO).sub(coeff));
+  });
+  return { coeffs: coeffs, left: left, right: right };
+}
+
+/* ------------------------------------------------------------------
+   Solver. Returns the printed lines, exactly as the program prints them.
+------------------------------------------------------------------ */
+function at(map, key) { return map.get(key) || ZERO; }
+
+function reducedForm(coeffs) {
+  let degree = 0;
+  coeffs.forEach(function (c, d) { if (!c.eqZero() && d > degree) degree = d; });
+  const parts = [g(at(coeffs, 0)) + " * X^0"];
+  for (let d = 1; d <= degree; d++) {
+    const c = at(coeffs, d);
+    parts.push((c.sign() >= 0 ? "+" : "-") + " " + g(c.abs()) + " * X^" + d);
+  }
+  return [parts.join(" ") + " = 0", degree];
+}
+
+function computorLines(equation, opts) {
+  const out = [];
+  const parsed = parseEquation(equation);
+  const coeffs = parsed.coeffs;
+  if (opts.verbose) {
+    out.push("Coefficients:");
+    out.push("  X^n | left       | right      | left - right");
+    const keys = new Set();
+    [parsed.left, parsed.right, coeffs].forEach(function (m) { m.forEach(function (_, k) { keys.add(k); }); });
+    Array.from(keys).sort(function (a, b) { return a - b; }).forEach(function (d) {
+      out.push("  " + String(d).padStart(3) + " | " +
+        at(parsed.left, d).toString().padStart(10) + " | " +
+        at(parsed.right, d).toString().padStart(10) + " | " + at(coeffs, d).toString());
+    });
+  }
+  const [form, degree] = reducedForm(coeffs);
+  out.push("Reduced form: " + form);
+
+  const a = at(coeffs, 2), b = at(coeffs, 1), c = at(coeffs, 0);
+  const roots = [];
+  if (degree === 0) {
+    out.push(c.eqZero() ? "Any real number is a solution." : "No solution.");
+    return { lines: out, roots: roots };
+  }
+  out.push("Polynomial degree: " + degree);
+  if (degree > 2) {
+    out.push("The polynomial degree is strictly greater than 2, I can't solve.");
+    return { lines: out, roots: roots };
+  }
+  if (degree === 1) {
+    if (opts.steps) {
+      out.push("[steps] b = " + b + ", c = " + c);
+      out.push("[steps] b * X + c = 0, so X = -c / b = -(" + c + ") / (" + b + ")");
+    }
+    const root = c.neg().div(b);
+    out.push("The solution is:");
+    out.push(show(root, opts));
+    return { lines: out, roots: [root] };
+  }
+  const disc = b.mul(b).sub(new F(4n).mul(a).mul(c));
+  const twoA = new F(2n).mul(a);
+  if (opts.steps) {
+    out.push("[steps] a = " + a + ", b = " + b + ", c = " + c);
+    out.push("[steps] discriminant = b^2 - 4*a*c = (" + b + ")^2 - 4*(" + a + ")*(" + c + ") = " + disc);
+    out.push("[steps] the discriminant is exact, so its sign is exact");
+  }
+  if (disc.sign() > 0) {
+    const r = rootOf(disc);
+    if (opts.steps) {
+      out.push("[steps] sqrt(" + disc + ") = " + r + (r instanceof F ? "" : " (Newton)"));
+      out.push("[steps] X = (-b -+ sqrt(D)) / (2*a), 2*a = " + twoA);
+    }
+    let r1, r2;
+    if (r instanceof F) { r1 = b.neg().sub(r).div(twoA); r2 = b.neg().add(r).div(twoA); }
+    else { const nb = b.neg().toNumber(), t = twoA.toNumber(); r1 = (nb - r) / t; r2 = (nb + r) / t; }
+    out.push("Discriminant is strictly positive, the two solutions are:");
+    out.push(show(r1, opts)); out.push(show(r2, opts));
+    return { lines: out, roots: [r1, r2] };
+  }
+  if (disc.eqZero()) {
+    if (opts.steps) out.push("[steps] X = -b / (2*a) = -(" + b + ") / (" + twoA + ")");
+    const root = b.neg().div(twoA);
+    out.push("Discriminant is zero, the solution is:");
+    out.push(show(root, opts));
+    return { lines: out, roots: [root] };
+  }
+  const real = b.neg().div(twoA);
+  const r = rootOf(disc.neg());
+  const imaginary = (r instanceof F) ? r.div(twoA) : r / twoA.toNumber();
+  if (opts.steps) {
+    out.push("[steps] sqrt(-D) = sqrt(" + disc.neg() + ") = " + r);
+    out.push("[steps] X = -b / (2*a) -+ i * sqrt(-D) / (2*a)");
+  }
+  const im = (imaginary instanceof F) ? imaginary.abs() : Math.abs(imaginary);
+  out.push("Discriminant is strictly negative, the two complex solutions are:");
+  out.push(show(real, opts) + " + " + show(im, opts) + "i");
+  out.push(show(real, opts) + " - " + show(im, opts) + "i");
+  return { lines: out, roots: [] };
+}
+
+/* ------------------------------------------------------------------
+   Live solver panel
+------------------------------------------------------------------ */
+const PRESETS = [
+  ["subject 1", "5 * X^0 + 4 * X^1 - 9.3 * X^2 = 1 * X^0"],
+  ["subject 2", "5 * X^0 + 4 * X^1 = 4 * X^0"],
+  ["subject 3", "8 * X^0 - 6 * X^1 + 0 * X^2 - 5.6 * X^3 = 3 * X^0"],
+  ["subject 4", "6 * X^0 = 6 * X^0"],
+  ["subject 5", "10 * X^0 = 15 * X^0"],
+  ["subject 6", "1 * X^0 + 2 * X^1 + 5 * X^2 = 0"],
+  ["defect A", "0.1 * X^0 + 0.3 * X^1 + 0.225 * X^2 = 0"],
+  ["defect B", "3 * X^1 = 0 * X^0"],
+  ["defect C", "1e10 * X^0 + 1 * X^1 = 0"],
+  ["defect D", "5 * Y^0 = 0 * X^0"],
+  ["defect E", "hello"],
+  ["free form", "5 + 4 * X + X^2 = X^2"],
+  ["exact root", "-4 * X^0 + 1 * X^2 = 0"],
+  ["degree drops", "1 * X^0 + 1 * X^1 + 1 * X^2 + 1 * X^3 = 1 * X^3"]
+];
+
+const eqInput = document.getElementById("eq");
+const outBox  = document.getElementById("out");
+const flags = {
+  steps: document.getElementById("f-steps"),
+  fractions: document.getElementById("f-fractions"),
+  verbose: document.getElementById("f-verbose")
+};
+
+function escapeHtml(text) {
+  return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+function runSolver() {
+  const equation = eqInput.value;
+  const opts = { steps: flags.steps.checked, fractions: flags.fractions.checked,
+                 verbose: flags.verbose.checked, plot: false };
+  const used = Object.keys(flags).filter(function (k) { return flags[k].checked; })
+                     .map(function (k) { return "--" + k; }).join(" ");
+  const command = 'python3 computor.py ' + (used ? used + " " : "") + '"' + equation + '"';
+  let body, exit = 0;
+  try {
+    body = escapeHtml(computorLines(equation, opts).lines.join("\n"));
+  } catch (error) {
+    if (error instanceof ParseError) {
+      body = '<span class="bad">error: ' + escapeHtml(error.message) + "</span>";
+      exit = 1;
+    } else { throw error; }
+  }
+  outBox.innerHTML = '<div class="cmd">' + escapeHtml(command) + "</div><pre>" + body +
+    "</pre>" + (exit ? '<pre class="note">exit status 1</pre>' : "");
+}
+
+(function buildPresets() {
+  const holder = document.getElementById("presets");
+  PRESETS.forEach(function (pair) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.textContent = pair[0];
+    button.addEventListener("click", function () { eqInput.value = pair[1]; runSolver(); });
+    holder.appendChild(button);
+  });
+})();
+eqInput.addEventListener("input", runSolver);
+Object.keys(flags).forEach(function (k) { flags[k].addEventListener("change", runSolver); });
+runSolver();
+
+/* ------------------------------------------------------------------
+   Discriminant explorer
+------------------------------------------------------------------ */
+const svg = document.getElementById("graph");
+const sliders = { a: document.getElementById("sa"), b: document.getElementById("sb"), c: document.getElementById("sc") };
+const values  = { a: document.getElementById("va"), b: document.getElementById("vb"), c: document.getElementById("vc") };
+const readout = { eq: document.getElementById("rEq"), D: document.getElementById("rD"),
+                  V: document.getElementById("rV"), r1: document.getElementById("rR1"),
+                  r2: document.getElementById("rR2"), vx: document.getElementById("rVx") };
+const SVGNS = "http://www.w3.org/2000/svg";
+
+function el(name, attrs, text) {
+  const node = document.createElementNS(SVGNS, name);
+  Object.keys(attrs).forEach(function (k) { node.setAttribute(k, attrs[k]); });
+  if (text !== undefined) node.textContent = text;
+  return node;
+}
+
+function fromSlider(input) {
+  const v = +input.value;
+  const f = F.fromDecimal(Math.abs(v).toFixed(1));
+  return v < 0 ? f.neg() : f;
+}
+
+function drawExplorer() {
+  const af = fromSlider(sliders.a), bf = fromSlider(sliders.b), cf = fromSlider(sliders.c);
+  const a = af.toNumber(), b = bf.toNumber(), c = cf.toNumber();
+  values.a.textContent = g(a); values.b.textContent = g(b); values.c.textContent = g(c);
+
+  const quadratic = !af.eqZero();
+  const disc = bf.mul(bf).sub(new F(4n).mul(af).mul(cf));
+  const sign = quadratic ? disc.sign() : 0;
+  let roots = [], verdict, colour;
+  if (!quadratic) {
+    verdict = bf.eqZero() ? (cf.eqZero() ? "every X" : "no root") : "degree 1";
+    colour = "var(--ink-2)";
+    if (!bf.eqZero()) roots = [cf.neg().div(bf).toNumber()];
+  } else if (sign > 0) {
+    const r = Math.sqrt(disc.toNumber());
+    roots = [(-b - r) / (2 * a), (-b + r) / (2 * a)];
+    verdict = "two real roots"; colour = "var(--two)";
+  } else if (sign === 0) {
+    roots = [-b / (2 * a)];
+    verdict = "one double root"; colour = "var(--one)";
+  } else {
+    verdict = "two complex roots"; colour = "var(--none)";
+  }
+
+  const terms = [];
+  if (quadratic) terms.push(g(a) + "X^2");
+  if (!bf.eqZero()) terms.push((b < 0 ? "- " : (terms.length ? "+ " : "")) + g(Math.abs(b)) + "X");
+  if (!cf.eqZero() || !terms.length) terms.push((c < 0 ? "- " : (terms.length ? "+ " : "")) + g(Math.abs(c)));
+  readout.eq.textContent = terms.join(" ") + " = 0";
+  readout.D.textContent = quadratic ? disc.toString() : "n/a";
+  readout.V.textContent = verdict; readout.V.style.color = colour;
+  if (quadratic && sign < 0) {
+    readout.r1.textContent = g(-b / (2 * a)) + " + " + g(Math.sqrt(-disc.toNumber()) / (2 * a)) + "i";
+    readout.r2.textContent = g(-b / (2 * a)) + " - " + g(Math.sqrt(-disc.toNumber()) / (2 * a)) + "i";
+  } else {
+    readout.r1.textContent = roots.length ? g(roots[0]) : "—";
+    readout.r2.textContent = roots.length > 1 ? g(roots[1]) : (roots.length === 1 && quadratic ? "same" : "—");
+  }
+  readout.vx.textContent = quadratic ? g(-b / (2 * a)) + ", " + g(c - b * b / (4 * a)) : "—";
+
+  /* window */
+  const centre = quadratic ? -b / (2 * a) : (roots.length ? roots[0] : 0);
+  let span = 5;
+  if (roots.length === 2) span = Math.max(Math.abs(roots[1] - roots[0]) * 1.3, 3);
+  const xlo = centre - span, xhi = centre + span;
+  const W = 620, H = 380, L = 46, R = 14, T = 16, B = 34;
+  const px = function (x) { return L + (x - xlo) / (xhi - xlo) * (W - L - R); };
+
+  const samples = [];
+  for (let i = 0; i <= 240; i++) {
+    const x = xlo + (xhi - xlo) * i / 240;
+    samples.push([x, a * x * x + b * x + c]);
+  }
+  let ylo = Math.min(0, ...samples.map(function (p) { return p[1]; }));
+  let yhi = Math.max(0, ...samples.map(function (p) { return p[1]; }));
+  if (yhi - ylo < 1e-9) { ylo -= 1; yhi += 1; }
+  const padY = (yhi - ylo) * 0.1; ylo -= padY; yhi += padY;
+  const py = function (y) { return T + (yhi - y) / (yhi - ylo) * (H - T - B); };
+
+  while (svg.firstChild) svg.removeChild(svg.firstChild);
+  const tick = function (range) {
+    const raw = range / 6, mag = Math.pow(10, Math.floor(Math.log10(raw)));
+    const norm = raw / mag;
+    return (norm >= 5 ? 5 : norm >= 2 ? 2 : 1) * mag;
+  };
+  const stepX = tick(xhi - xlo), stepY = tick(yhi - ylo);
+  for (let x = Math.ceil(xlo / stepX) * stepX; x <= xhi; x += stepX) {
+    svg.appendChild(el("line", { x1: px(x), y1: T, x2: px(x), y2: H - B,
+      stroke: "var(--line-2)", "stroke-width": 1 }));
+    svg.appendChild(el("text", { x: px(x), y: H - B + 16, "text-anchor": "middle",
+      "font-size": 10.5, fill: "var(--ink-3)", "font-family": "IBM Plex Mono, monospace" }, g(x)));
+  }
+  for (let y = Math.ceil(ylo / stepY) * stepY; y <= yhi; y += stepY) {
+    svg.appendChild(el("line", { x1: L, y1: py(y), x2: W - R, y2: py(y),
+      stroke: "var(--line-2)", "stroke-width": 1 }));
+    svg.appendChild(el("text", { x: L - 7, y: py(y) + 3.5, "text-anchor": "end",
+      "font-size": 10.5, fill: "var(--ink-3)", "font-family": "IBM Plex Mono, monospace" }, g(y)));
+  }
+  if (ylo <= 0 && yhi >= 0) {
+    svg.appendChild(el("line", { x1: L, y1: py(0), x2: W - R, y2: py(0),
+      stroke: "var(--ink-3)", "stroke-width": 1.4 }));
+  }
+  if (xlo <= 0 && xhi >= 0) {
+    svg.appendChild(el("line", { x1: px(0), y1: T, x2: px(0), y2: H - B,
+      stroke: "var(--ink-3)", "stroke-width": 1.4 }));
+  }
+  const d = samples.map(function (p, i) {
+    return (i ? "L" : "M") + px(p[0]).toFixed(2) + " " + py(p[1]).toFixed(2);
+  }).join(" ");
+  svg.appendChild(el("path", { d: d, fill: "none", stroke: colour, "stroke-width": 2.2,
+    "stroke-linejoin": "round" }));
+  roots.forEach(function (x) {
+    if (x < xlo || x > xhi) return;
+    svg.appendChild(el("circle", { cx: px(x), cy: py(0), r: 5.5, fill: "var(--panel)",
+      stroke: colour, "stroke-width": 2.4 }));
+    svg.appendChild(el("text", { x: px(x), y: py(0) - 13, "text-anchor": "middle",
+      "font-size": 11, fill: colour, "font-family": "IBM Plex Mono, monospace",
+      "font-weight": 500 }, g(x)));
+  });
+  if (quadratic && sign < 0) {
+    svg.appendChild(el("text", { x: (L + W - R) / 2, y: T + 18, "text-anchor": "middle",
+      "font-size": 12, fill: colour, "font-family": "IBM Plex Mono, monospace" },
+      "the curve never reaches y = 0"));
+  }
+}
+Object.keys(sliders).forEach(function (k) { sliders[k].addEventListener("input", drawExplorer); });
+drawExplorer();
+
+/* ------------------------------------------------------------------
+   Nav highlight
+------------------------------------------------------------------ */
+(function scrollSpy() {
+  const links = Array.prototype.slice.call(document.querySelectorAll(".rail a"));
+  const targets = links.map(function (a) { return document.querySelector(a.getAttribute("href")); });
+  const mark = function () {
+    let active = 0;
+    targets.forEach(function (node, i) {
+      if (node && node.getBoundingClientRect().top < window.innerHeight * 0.35) active = i;
+    });
+    links.forEach(function (a, i) { a.classList.toggle("on", i === active); });
+  };
+  window.addEventListener("scroll", mark, { passive: true });
+  mark();
+})();
+</script>
+</body>
+</html>
