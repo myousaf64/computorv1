@@ -8,20 +8,119 @@ are hand-written Newton iterations, as the subject allows only the four
 operations that you implement yourself.
 """
 import sys
-import re
 from fractions import Fraction
 
-TERM = re.compile(r'([+-]?)\s*([\d.]+)\s*\*\s*[Xx]\s*\^\s*(\d+)')
+DIGITS = '0123456789'
+
+
+class ParseError(Exception):
+    """The input is not a valid equation."""
+
+
+# --------------------------------------------------------------------------
+# parsing
+#
+# One grammar reads the canonical form and the free form:
+#
+#   side := term (('+' | '-') term)*
+#   term := [number] ['*'] [X ['^' whole number]]
+#
+# The scanner consumes the side from left to right. Any symbol that the
+# grammar does not accept raises a ParseError, so no term is dropped in
+# silence.
+# --------------------------------------------------------------------------
+
+def _skip(s, i):
+    while i < len(s) and s[i] in ' \t':
+        i += 1
+    return i
+
+
+def _number(s, i):
+    """Return (Fraction, next index). Return (None, i) when no number is at i."""
+    start = i
+    while i < len(s) and s[i] in DIGITS:
+        i += 1
+    if i < len(s) and s[i] == '.':
+        i += 1
+        while i < len(s) and s[i] in DIGITS:
+            i += 1
+    if i == start:
+        return None, start
+    if s[start:i] == '.':
+        raise ParseError('a lone "." is not a number')
+    end = i
+    if end < len(s) and s[end] in 'eE':
+        j = end + 1
+        if j < len(s) and s[j] in '+-':
+            j += 1
+        k = j
+        while j < len(s) and s[j] in DIGITS:
+            j += 1
+        if j > k:
+            end = j
+    return Fraction(s[start:end]), end
+
+
+def _term(s, i):
+    """Parse one term. Return (coefficient, exponent, next index)."""
+    coeff, i = _number(s, i)
+    i = _skip(s, i)
+    star = i < len(s) and s[i] == '*'
+    if star:
+        i = _skip(s, i + 1)
+    if i < len(s) and s[i] in 'Xx':
+        i = _skip(s, i + 1)
+        exponent = 1
+        if i < len(s) and s[i] == '^':
+            i = _skip(s, i + 1)
+            value, i = _number(s, i)
+            if value is None or value < 0 or value.denominator != 1:
+                raise ParseError('an exponent must be a whole number, 0 or more')
+            exponent = int(value)
+        return (Fraction(1) if coeff is None else coeff), exponent, i
+    if star:
+        raise ParseError('a "*" must be followed by X')
+    if coeff is None:
+        if i >= len(s):
+            raise ParseError('a term is missing at the end of a side')
+        raise ParseError('unexpected symbol "%s"' % s[i])
+    return coeff, 0, i
+
+
+def parse_side(s):
+    """Return {exponent: Fraction} for one side of the equation."""
+    i = _skip(s, 0)
+    if i >= len(s):
+        raise ParseError('one side of the equation is empty')
+    sign = 1
+    if s[i] in '+-':
+        sign = -1 if s[i] == '-' else 1
+        i = _skip(s, i + 1)
+    coeffs = {}
+    while True:
+        coeff, exponent, i = _term(s, i)
+        coeffs[exponent] = coeffs.get(exponent, Fraction(0)) + sign * coeff
+        i = _skip(s, i)
+        if i >= len(s):
+            return coeffs
+        if s[i] not in '+-':
+            raise ParseError('unexpected symbol "%s" - put a "+" or a "-" '
+                             'between two terms' % s[i])
+        sign = -1 if s[i] == '-' else 1
+        i = _skip(s, i + 1)
 
 
 def parse(equation):
-    """Return {degree: Fraction coeff} for lhs - rhs, given canonical terms."""
-    lhs, rhs = equation.split('=')
-    coeffs = {}
-    for side, sign in ((lhs, 1), (rhs, -1)):
-        for s, num, exp in TERM.findall(side):
-            c = Fraction(num) * (-1 if s == '-' else 1) * sign
-            coeffs[int(exp)] = coeffs.get(int(exp), 0) + c
+    """Return {exponent: Fraction} for the reduced equation."""
+    sides = equation.split('=')
+    if len(sides) != 2:
+        raise ParseError('an equation must have exactly one "="')
+    left = parse_side(sides[0])
+    right = parse_side(sides[1])
+    coeffs = dict(left)
+    for exponent, coeff in right.items():
+        coeffs[exponent] = coeffs.get(exponent, Fraction(0)) - coeff
     return coeffs
 
 
