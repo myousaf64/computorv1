@@ -53,8 +53,8 @@ python3 -m py_compile computor.py test_computor.py
 
 ## Git workflow
 
-`main` is stable. `dev` is the integration branch. One branch for each task,
-branched from `dev`, merged into `dev` by a pull request.
+`main` is stable and is the only long-lived branch. One branch for each
+task, branched from `main`, merged into `main` by a pull request.
 
 Full rules: `~/dotfiles/claude/WORKFLOW.md`. The rules are enforced by
 `~/dotfiles/claude/hooks/guard-git.sh`, not by this paragraph.

@@ -17,6 +17,19 @@ decision now breaks.
 
 ---
 
+## 2026-09-05 - No dev branch
+
+**Context:** `AGENTS.md` named `dev` as the integration branch, but all seven
+pull requests were opened against `main` and merged into `main`. `dev` never
+had a copy on the remote.
+**Decision:** `main` is the only long-lived branch. One branch for each task,
+branched from `main`, merged into `main` by a pull request.
+**Because:** One person works on this repository and the whole check is one
+command that runs in under a second. An integration branch adds a merge step
+and protects nothing.
+**Instead of:** Keeping `dev` and rewriting the history of seven merged pull
+requests to match a rule that nobody followed.
+
 ## 2026-09-04 - Every bonus prints behind a flag
 
 **Context:** The subject assesses the bonus only if the mandatory part is
