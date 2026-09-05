@@ -369,7 +369,7 @@ def main(argv):
         elif arg in ('-h', '--help'):
             print(USAGE)
             return 0
-        elif arg[:1] == '-' and len(arg) > 1 and arg[1] not in DIGITS + '.':
+        elif arg.startswith('-') and len(arg) > 1 and arg[1] not in DIGITS + '.':
             print('error: unknown option "%s"' % arg, file=sys.stderr)
             print(USAGE, file=sys.stderr)
             return 1
